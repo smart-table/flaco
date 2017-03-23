@@ -2,16 +2,16 @@ import buble from 'rollup-plugin-buble';
 import node from 'rollup-plugin-node-resolve';
 
 export default {
-  entry: "./index.js",
+  entry: "./examples/smart-table/index.js",
   plugins: [
     node({jsnext:true}),
     buble({
-      target: {chrome: 52},
-      jsx: 'h'
+      jsx: 'h',
+      target:{chrome:52}
     })
   ],
-  dest: "./bundle.js",
-  moduleName: "bundle",
+  dest: "./examples/smart-table/bundle.js",
+  moduleName: "smartTable",
   format: "iife",
   sourceMap: 'inline'
 };
