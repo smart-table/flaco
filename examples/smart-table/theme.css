@@ -1,7 +1,7 @@
 body {
     margin: 0;
     color: #464646;
-    font-family:sans-serif;
+    font-family: sans-serif;
     font-weight: lighter;
 }
 
@@ -9,20 +9,32 @@ body * {
     box-sizing: border-box;
 }
 
+.visually-hidden {
+    position: absolute;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    width: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0
+}
+
 #table-container {
     display: inline-block;
     position: relative;
-    padding: 1em;
+    padding: 0.5em;
+    width: 100%;
 }
 
 table {
-    table-layout: fixed;
+    table-layout: auto;
     width: 100%;
     border-collapse: collapse;
 }
 
 th, td {
-    padding: 0.4em;
+    padding: 0.2em;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -79,7 +91,7 @@ input {
     padding: 0.3em;
     border: 1px solid #7c7c7c;
     border-radius: 2px;
-    font:inherit;
+    font: inherit;
     color: #708ae6;
 }
 
@@ -92,4 +104,15 @@ input:focus {
 label {
     font-size: 0.8em;
     font-style: normal;
+}
+
+.select-checkbox {
+    display: inline-block;
+    padding: 0.4em;
+    margin: 0;
+}
+
+.select-checkbox > input{
+    margin: 0;
+    padding: 0.2em;
 }

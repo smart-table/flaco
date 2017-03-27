@@ -1,56 +1,48 @@
 import {default as smartTable} from 'smart-table-core';
+import crud from 'smart-table-crud';
 import {mount, h} from '../../index';
-import {displaySubscriber, sortable} from './smartTableCombinator';
+import {TBody} from './components/tbody';
+import {SortableHeader} from './components/sortableHeader';
+import {Summary} from './components/summary';
+import {LoadingIndicator} from './components/loadingIndicator';
+import {Pager} from './components/pagination';
+import {SearchBox} from './components/search';
 
-const table = smartTable({data, tableState: {search: {}, filter: {}, sort: {}, slice: {page: 1, size: 30}}});
-
-const SortableHeader = sortable((props, directive) => {
-  const {stSortPointer, children, stState} = props;
-  const {pointer, direction} =stState || {};
-  let className = '';
-  if (pointer === stSortPointer) {
-    className = direction === 'asc' ? 'st-sort-asc' : (direction === 'desc' ? 'st-sort-desc' : '');
-  }
-  return <th class={className} onClick={directive.toggle}>{children}</th>;
-});
-
-const Row = ({person}) => (<tr>
-  <td>{person.name.last}</td>
-  <td>{person.name.first}</td>
-  <td>{person.gender}</td>
-  <td>{person.birthDate.toDateString()}</td>
-  <td>{person.size}</td>
-</tr>);
-
-
-const TBody = displaySubscriber(({stState}) => {
-  const persons = Array.isArray(stState) ? stState : [];
-
-  return (<tbody>
-  {
-    persons.map(item => {
-      const {value:person} = item;
-      return <Row person={person}/>
-    })
-  }
-  </tbody>);
-});
-
+//data coming from global
+const tableState = {search: {}, filter: {}, sort: {}, slice: {page: 1, size: 20}};
+const table = smartTable({data, tableState}, crud);
 
 const PersonsTable = ({smartTable}) => (
-  <div>
-    <p>Processing ...</p>
+  <div id="table-container">
+    <LoadingIndicator id="overlay" smartTable={smartTable}/>
     <table>
       <thead>
+      <SearchBox stSearchScope={['name.last', 'name.first']} smartTable={smartTable}/>
       <tr>
-        <SortableHeader stSortCycle={true} stSortPointer="name.last" smartTable={smartTable}>Last name</SortableHeader>
-        <SortableHeader stSortPointer="name.first" smartTable={smartTable}>First name</SortableHeader>
-        <th>Gender</th>
-        <th>Birth Date</th>
-        <th>Size</th>
+        <th>
+          <label class="select-checkbox">
+            <span class="visually-hidden"> select all</span>
+            <input type="checkbox"/>
+          </label>
+        </th>
+        <SortableHeader smartTable={smartTable} stSortCycle={true} stSortPointer="name.last">Last name</SortableHeader>
+        <SortableHeader smartTable={smartTable} stSortPointer="name.first">First name</SortableHeader>
+        <SortableHeader smartTable={smartTable} stSortPointer="gender">Gender</SortableHeader>
+        <SortableHeader smartTable={smartTable} stSortPointer="birthDate">Birth Date</SortableHeader>
+        <SortableHeader smartTable={smartTable} stSortPointer="size">Size</SortableHeader>
       </tr>
       </thead>
       <TBody smartTable={smartTable}/>
+      <tfoot>
+      <tr>
+        <td colSpan="3">
+          <Summary smartTable={smartTable}/>
+        </td>
+        <td colSpan="3">
+          <Pager smartTable={smartTable}/>
+        </td>
+      </tr>
+      </tfoot>
     </table>
   </div>
 );
