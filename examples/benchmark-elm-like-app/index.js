@@ -8,7 +8,7 @@ let lastMeasure;
 
 function startMeasure (name, cb) {
   startTime = performance.now()
-  performance.mark('start ' + name);
+  // performance.mark('start ' + name);
   lastMeasure = name;
   cb();
 }
@@ -21,8 +21,8 @@ function stopMeasure () {
       function metaStopMeasure () {
         lastMeasure = null
         const stop = performance.now()
-        performance.mark('end ' + last);
-        performance.measure(last, 'start ' + last, 'end ' + last);
+        // performance.mark('end ' + last);
+        // performance.measure(last, 'start ' + last, 'end ' + last);
         console.log(last + " took " + (stop - startTime))
       },
       0

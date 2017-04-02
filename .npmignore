@@ -1,0 +1,6 @@
+.idea
+examples
+test
+node_modules
+rollup.legacy.js
+rollup.modern.js

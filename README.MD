@@ -7,7 +7,7 @@ Yet another view engine based on [hyperscript]() and virtual dom.
 In **Flaco**, the base unit, component, is *just* [pure]() and [stateless]() functions which should be deterministic and easy to test. 
 You can then use any combinator (aka higher order function) to give more specificity (perhaps loosing the purity or statelessness) to your components and embrace the programming paradigm you prefer (stateful components, [Elm]() or [Redux]() like architecture, observables, etc) 
 
-Ah, and Flaco is made of less than **300** lines of code while providing a wide range of *features*, difficult to beat !
+Ah, and Flaco is about **2kb** minified and gzipped while providing a wide range of *features*, difficult to beat !
 
 ## Installation
 
@@ -51,7 +51,6 @@ import {h} from 'flaco';
 
 export const HelloWorld = ({hello:'Hello', world:'World'} = {}) => (<h1>{hello} ... {world} !</h1>);
 ```
-
 It should have the sugar the JSX syntax can provide.
 
 ### Mount a component
@@ -79,11 +78,11 @@ mountInFrench(document.getElementById('andThere'));
 ### Use combinator to create state ... (or the beginning of the end)
 
 Without any doubt, you will want the user to interact with your shiny user interface and you will need somehow to manage application states. Flaco itself does not make any assumption on how to do it but provide few combinators (higher order function for your components) to create common patterns.
-They are shipped with the core module but don't worry with any good module bundler (like [Rollup]()) you'll be able to tree shake the parts you don't use (and anyway the full Flaco lib remains probably one of the smallest UI framework you may know)
+They are shipped with the core module but don't worry with any good module bundler (like [Rollup]()) you'll be able to tree shake the parts you don't use (and anyway the full Flaco lib remains probably one of the smallest UI *frameworks* you may know)
    
 #### Self contained state
 
-In some cases, you don't need the state of a particular component to be managed globally or shared. Only it, can be aware of its own encapsulated state and able to edit it. 
+In some cases, you don't need the state of a particular component to be managed globally or shared. Only it, should be aware of its own encapsulated state and able to edit it.
 That could be a collapse/expanding section for example.
 
 To create such behaviour you can use the *withState* combinator: it will create a scope specific to a component instance and allow it to update itself (by passing a second argument to your component)
@@ -105,7 +104,7 @@ const ExpandableSection = withState(({sectionId, expanded, children},setState) =
 }));
 ```
 
-We have now a "reusable component" you can mount anywhere, share across projects, etc
+We have now a "reusable component" you can mount anywhere, share across projects, etc.
 
 ```Jsx
 import {mount} from 'flaco';
@@ -123,11 +122,11 @@ document.getElementById('main'));
 
 [See in CodePen]()
 
-#### Global/Partial application state ([Redux]() store like)
+#### Global application state (the [Elm]() way)
 
 // blah
 
-#### Global application state (the [Elm]() way)
+#### Global/Partial application state ([Redux]() store like)
 
 // blah
 
@@ -137,18 +136,39 @@ document.getElementById('main'));
 
 ## More examples
 
+The repo comes with few *bigger* examples you can run by
+1. going into the folder (ie ``cd ./examples/stateful-counter``)
+2. installing the dependencies with ``yarn`` or ``npm install``
+3. building/bundling the app ``yarn build`` or ``npm run build``
+4. and serving/browsing the index.html file.
+
+### [stateful-counter](./examples/stateful-counter)
+
+//
+
+### [benchmark-elm-like](./examples/benchmark-elm-like)
+
+//
+
+### [todomvc-redux](./examples/todomvc-redux)
+
+//
+
+### [smart-table](./examples/smart-table)
+
+//
+
+
+###
+
 // blah blah
 
 ## Contributing
 
 ### Test
 
-//bla bla
+``yarn test`` or ``npm test``
 
 ### Reporting an issue
 
-//bla blah
-
-
-
-
+Any *bug* or *troubleshooting* need to come with an **isolated running example** (ex: a [codepen]() reproducing your issue only - we don't need the whole app) or will simply be ignored.

@@ -1,4 +1,4 @@
-import  h from "../../lib/h"
+import {h} from "../../index"
 
 export default ({model, actions}) => model.data.map(({id, label}, i) =>
   <tr class={id === model.selected ? "danger" : ""}>

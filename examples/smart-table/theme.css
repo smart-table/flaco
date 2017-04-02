@@ -9,6 +9,11 @@ body * {
     box-sizing: border-box;
 }
 
+main {
+    max-width: 60rem;
+    margin: auto;
+}
+
 .visually-hidden {
     position: absolute;
     overflow: hidden;
@@ -17,13 +22,14 @@ body * {
     width: 1px;
     margin: -1px;
     padding: 0;
-    border: 0
+    border: 0;
+    top: 0;
 }
 
 #table-container {
     display: inline-block;
     position: relative;
-    padding: 0.5em;
+    padding: 1em;
     width: 100%;
 }
 
@@ -33,26 +39,171 @@ table {
     border-collapse: collapse;
 }
 
-th, td {
-    padding: 0.2em;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.gender-male {
+    color: #434eff;
+}
+
+.gender-female {
+    color: salmon;
+}
+
+thead {
+    border-top: 1px solid #f3f3f3;
+    box-shadow: 0 2px 2px 0 #b6b6b6;
+}
+
+tbody {
+    color: #1c758e;
+    border-bottom: 1px solid #bfbfbf;
+    border-right: 1px solid #bfbfbf;
+    box-shadow: 0 1px 2px 0 #bfbfbf;
+
+}
+
+tr {
+    display: flex;
+    align-items: stretch;
+}
+
+tr[aria-hidden="true"] {
+    display: none;
 }
 
 th {
-    text-align: left;
+    flex-grow: 1;
+    padding: 0.2rem 0.4rem;
+    font: inherit;
+    font-weight: 400;
+    align-items: center;
+    justify-content: space-between;
+    display: flex;
 }
 
-.st-sort-asc:after {
-    content: '\25b3\0020';
+tbody > tr:nth-child(2n) {
+    background: #f3f3f3;
 }
 
-.st-sort-desc:after {
-    content: '\25bd\0020';
+tbody td:not(:last-child) {
+    border-right: 1px solid #f3f3f3;
 }
+
+tbody td > span {
+    padding-left: 0.4em;
+}
+
+/* todo */
+td.col-lastname > *,
+td.col-firstname > *,
+td.col-gender > *,
+td.col-size > *,
+td.col-birthdate > * {
+    width: 100%;
+    height: 100%;
+    vertical-align: middle;
+    display: flex;
+    align-items: center;
+}
+
+td.fixed-size > span,
+td.fixed-size {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+td.col-size > span {
+    position: relative;
+}
+
+.size-stick {
+    display: inline-block;
+    left: 0;
+    bottom: 0;
+    width: 10px;
+    background: currentColor;
+    position: absolute;
+}
+
+th.col-firstname,
+td.col-firstname,
+th.col-lastname,
+td.col-lastname,
+th.col-birthdate,
+td.col-birthdate {
+    flex-grow: 2;
+    flex-basis: 25%;
+}
+
+.col-actions {
+    padding: 0.3em;
+}
+
+.fixed-size {
+    flex-grow: 0;
+    flex-shrink: 0;
+    min-width: 50px;
+}
+
+.fixed-size.col-size,
+.fixed-size.col-gender {
+    min-width: 110px;
+}
+
+/*.st-sort-asc:after {*/
+/*content: '\25b3\0020';*/
+/*}*/
+
+/*.st-sort-desc:after {*/
+/*content: '\25bd\0020';*/
+/*}*/
 
 #overlay {
     display: none;
+}
+
+thead tr {
+    width: 100%;
+}
+
+thead tr:not(.filter-row) {
+    border-top: 1px solid darkgray;
+    border-bottom: 1px solid darkgray;
+    padding: 0.4em 0;
+}
+
+.filter-row {
+    background: #f5f5f5;
+}
+
+label, .filter-row form {
+    padding: 0.5rem;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+label > span {
+    font-size: 0.9rem;
+    font-weight: bolder;
+    color: #4c6bb1;
+}
+
+.filter-row form {
+    animation: open 0.3s ease-out;
+}
+
+.buttons-container {
+    display: flex;
+}
+
+.buttons-container button {
+    margin-left: 0.3rem;
+}
+
+form button {
+    padding: 0.2rem;
+    width: 80px;
 }
 
 #overlay.st-working {
@@ -62,57 +213,137 @@ th {
     right: 0;
     bottom: 0;
     top: 0;
-    z-index: 999;
+    z-index: 9999;
     background: white;
     opacity: 0.8;
     align-items: center;
     justify-content: center;
 }
 
-thead {
-    border-bottom: 2px solid #343434;
-}
-
-tbody > tr:not(:first-child) {
-    border-top: 1px solid #4b4b4b;
-}
-
-tbody > tr:nth-child(2n) {
-    background: #edf3f7;
-}
-
-[data-st-pagination] {
-    text-align: right;
-}
-
-input {
-    display: inline-block;
-    width: 100%;
-    padding: 0.3em;
-    border: 1px solid #7c7c7c;
-    border-radius: 2px;
+button {
     font: inherit;
-    color: #708ae6;
-}
-
-input:focus {
-    outline: none;
-    outline-offset: 0;
-    border: 1px solid #708ae6;
-}
-
-label {
-    font-size: 0.8em;
-    font-style: normal;
-}
-
-.select-checkbox {
-    display: inline-block;
-    padding: 0.4em;
+    font-size: 0.9em;
     margin: 0;
-}
-
-.select-checkbox > input{
-    margin: 0;
+    background: inherit;
+    border: 1px solid #6b9aff;
+    border-bottom: 2px solid #667cff;
     padding: 0.2em;
+    border-radius: 0.2em;
+    box-shadow: 0 2px 2px 0 #cdcdcd;
+    transition: background 0.3s, color 0.3s;
+    outline: none;
+    color: #667cff;
+    position: relative;
 }
+
+button:disabled {
+    border: 1px solid currentColor;
+    box-shadow: none;
+}
+
+button:focus:not(:disabled), button:hover:not(:disabled) {
+    box-shadow: 0 0 4px 1px #6b9aff;
+}
+
+button:focus:not(:disabled):before, button:hover:not(:disabled):before {
+    content: '';
+    border-width: 0.6em;
+    position: absolute;
+    border-color: #6b9aff transparent transparent transparent;
+    border-style: solid;
+    top: -0.6em;
+    left: calc(50% - 0.5em);
+}
+
+button:active:not(:disabled) {
+    box-shadow: 0 2px 2px 0 #667cff inset;
+}
+
+input, select {
+    font: inherit;
+    font-weight: lighter;
+    border-radius: 0;
+}
+
+input:focus, select:focus {
+    outline: none;
+}
+
+tbody input, tbody select {
+    border: none;
+}
+
+tbody select {
+    border-radius: 0;
+}
+
+tbody input:focus, tbody select:focus {
+    background: #6b9aff;
+    color: white;
+}
+
+tfoot td {
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5em;
+}
+
+thead input, thead select {
+    flex-basis: 75%;
+    padding: 0.3rem;
+    border: 1px solid #6b9aff;
+    transition: all 0.4s;
+    margin-left: 1rem;
+    border-radius: 0.2em;
+}
+
+thead input:focus, thead select:focus {
+    box-shadow: 0 0 8px 0 #6b9aff;
+    flex-grow: 1;
+}
+
+.with-tooltip {
+    position: relative;
+}
+
+.tooltip {
+    white-space: nowrap;
+}
+
+.with-tooltip:not(:disabled):hover .tooltip, .with-tooltip:focus:not(:disabled) .tooltip {
+    display: block;
+    top: -150%;
+    padding: 0.4rem;
+    font-size: 0.85rem;
+    z-index: 999;
+    height: auto;
+    width: auto;
+    background: rgba(39, 39, 39, 0.89);
+    color: #dedede;
+    border-radius: 0.2rem;
+    transition: top 0.3s;
+    left: -200%;
+    clip: inherit;
+    margin: 0;
+}
+
+.active-filter {
+    background: #6b9aff;
+    color: white;
+}
+
+@keyframes open {
+    0% {
+        transform: scaleY(0);
+        transform-origin: top;
+        opacity: 0;
+    }
+    100% {
+        transform-origin: top;
+        transform: scaleY(1);
+        opacity: 1;
+    }
+}
+

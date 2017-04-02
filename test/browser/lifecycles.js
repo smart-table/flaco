@@ -1,14 +1,6 @@
 import zora from 'zora';
-import {onMount, onUnMount, h, mount} from '../../index';
-
-function waitNextTick () {
-  return new Promise(function (resolve) {
-    setTimeout(function () {
-      resolve();
-    }, 2)
-  })
-}
-
+import {onMount, onUnMount, h, mount, render} from '../../index';
+import {waitNextTick} from './util'
 
 export default zora()
   .test('should run a function when component is mounted', function * (t) {
@@ -23,14 +15,24 @@ export default zora()
     yield waitNextTick();
     t.equal(counter, 1);
   })
-  // .test('should run a function when component is unMounted', function * (t) {
-  //   let unmounted = null;
-  //   const container = document.createElement('div');
-  //   const containerComp = (({items}) =>());
-  //   const Item = onUnMount((n) => {
-  //     unmounted = n;
-  //   }, ({id}) => <li id={id}>hello world</li>);
-  //   t.equal(unmounted, null);
-  //   yield waitNextTick();
-  //   t.equal(unmounted.id, 1);
-  // })
+  .test('should run a function when component is unMounted', function * (t) {
+    let unmounted = null;
+    const container = document.createElement('div');
+    const Item = onUnMount((n) => {
+      unmounted = n;
+    }, ({id}) => <li id={id}>hello world</li>);
+    const containerComp = (({items}) => (<ul>
+      {
+        items.map(item => <Item {...item}/>)
+      }
+    </ul>));
+
+    const vnode = mount(containerComp, {items: [{id: 1}, {id: 2}, {id: 3}]}, container);
+    t.equal(container.innerHTML, '<ul><li id="1">hello world</li><li id="2">hello world</li><li id="3">hello world</li></ul>');
+    const batch = render(vnode, containerComp({items: [{id: 1}, {id: 3}]}), container);
+    t.equal(container.innerHTML, '<ul><li id="1">hello world</li><li id="3">hello world</li></ul>');
+    for (let f of batch){
+      f();
+    }
+    t.notEqual(unmounted, null);
+  })
