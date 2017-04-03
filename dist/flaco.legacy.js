@@ -96,6 +96,40 @@ var isShallowEqual = function (a, b) {
   return aKeys.length === bKeys.length && aKeys.every(function (k) { return a[k] === b[k]; });
 };
 
+var ownKeys = function (obj) { return Object.keys(obj).filter(function (k) { return obj.hasOwnProperty(k); }); };
+
+var isDeepEqual = function (a, b) {
+  var type = typeof a;
+
+  //short path(s)
+  if (a === b) {
+    return true;
+  }
+
+  if (type !== typeof b) {
+    return false;
+  }
+
+  if (type !== 'object') {
+    return a === b;
+  }
+
+  // objects ...
+  if (a === null || b === null) {
+    return false;
+  }
+
+  if (Array.isArray(a)) {
+    return a.length && b.length && a.every(function (item, i) { return isDeepEqual(a[i], b[i]); });
+  }
+
+  var aKeys = ownKeys(a);
+  var bKeys = ownKeys(b);
+  return aKeys.length === bKeys.length && aKeys.every(function (k) { return isDeepEqual(a[k], b[k]); });
+};
+
+var identity = function (p) { return p; };
+
 var noop = function () {
 };
 
@@ -209,6 +243,7 @@ var domify = function updateDom (oldVnode, newVnode, parentDomNode) {
   if (!oldVnode) {//there is no previous vnode
     if (newVnode) {//new node => we insert
       newVnode.dom = parentDomNode.appendChild(domFactory(newVnode));
+      newVnode.lifeCycle = 1;
       return {vnode: newVnode, garbage: null};
     } else {//else (irrelevant)
       throw new Error('unsupported operation')
@@ -219,10 +254,12 @@ var domify = function updateDom (oldVnode, newVnode, parentDomNode) {
       return ({garbage: oldVnode, dom: null});
     } else if (newVnode.nodeType !== oldVnode.nodeType) {//it must be replaced
       newVnode.dom = domFactory(newVnode);
+      newVnode.lifeCycle = 1;
       parentDomNode.replaceChild(newVnode.dom, oldVnode.dom);
       return {garbage: oldVnode, vnode: newVnode};
     } else {// only update attributes
       newVnode.dom = oldVnode.dom;
+      newVnode.lifeCycle = oldVnode.lifeCycle + 1;
       return {garbage: null, vnode: newVnode};
     }
   }
@@ -265,6 +302,11 @@ var render = function renderer (oldVnode, newVnode, parentDomNode, onNextTick) {
 
     //2. update dom attributes based on vnode prop diffing.
     //sync
+
+    if (vnode.onUpdate && vnode.lifeCycle > 1) {
+      vnode.onUpdate();
+    }
+
     updateAttributes(vnode, tempOldNode)(vnode.dom);
 
     //fast path
@@ -272,12 +314,11 @@ var render = function renderer (oldVnode, newVnode, parentDomNode, onNextTick) {
       return onNextTick;
     }
 
-    var childrenCount = Math.max(tempOldNode.children.length, vnode.children.length);
-
-    //todo check for a lifecycle to avoid to run onMount when component has been mounted yet
-    if (vnode.onMount) {
+    if (vnode.onMount && vnode.lifeCycle === 1) {
       onNextTick.push(function () { return vnode.onMount(); });
     }
+
+    var childrenCount = Math.max(tempOldNode.children.length, vnode.children.length);
 
     //async will be deferred as it is not "visual"
     var setListeners = updateEventListeners(vnode, tempOldNode);
@@ -301,8 +342,9 @@ var mount = curry(function (comp, initProp, root) {
   var vnode = comp(initProp || {});
   var batch = render(null, vnode, root);
   nextTick(function () {
-    while (batch.length) {
-      var op = batch.shift();
+    for (var i = 0, list = batch; i < list.length; i += 1) {
+      var op = list[i];
+
       op();
     }
   });
@@ -331,8 +373,9 @@ function update (comp, initialVNode) {
     // end danger zone
 
     nextTick(function () {
-      while (nextBatch.length) {
-        var op = nextBatch.shift();
+      for (var i = 0, list = nextBatch; i < list.length; i += 1) {
+        var op = list[i];
+
         op();
       }
     });
@@ -360,8 +403,10 @@ var onMount = lifeCycleFactory('onMount');
  */
 var onUnMount = lifeCycleFactory('onUnMount');
 
+var onUpdate = lifeCycleFactory('onUpdate');
+
 /**
- * Combinator to create a "stateful component": ie it will have its own state
+ * Combinator to create a "stateful component": ie it will have its own state and the ability to update its own tree
  * @param comp
  * @returns {Function}
  */
@@ -372,23 +417,25 @@ var withState = function (comp) {
       var args = [], len = arguments.length - 1;
       while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
 
-      // wrap the function call when the component has not been mounted yet (lazy evaluation to make sure the updateFunc has been set);
+      //lazy evaluate updateFunc (to make sure it is defined
       var setState = function (newState) { return updateFunc(newState); };
       return comp.apply(void 0, [ props, setState ].concat( args ));
     };
-
-    return onMount(function (vnode) {
+    var setUpdateFunction = function (vnode) {
       updateFunc = update(wrapperComp, vnode);
-    }, wrapperComp);
+    };
+
+    return compose(onMount(setUpdateFunction), onUpdate(setUpdateFunction))(wrapperComp);
   };
 };
+
+//todo throw this in favor of connect only ?
 
 /**
  * Combinator to create a Elm like app
  * @param view
  */
 var elm = function (view) {
-
   return function (ref) {
     var model = ref.model;
     var updates = ref.updates;
@@ -421,14 +468,72 @@ var elm = function (view) {
   };
 };
 
+
+/*
+
+connect(store, actions, watcher)
+
+
+
+
+ */
+
+/**
+ * Connect combinator: will create "container" component which will subscribe to a Redux like store. and update its children whenever a specific slice of state change
+ */
+var connect = function (store, actions, sliceState) {
+  if ( actions === void 0 ) actions = {};
+  if ( sliceState === void 0 ) sliceState = identity;
+
+  return function (comp, mapStateToProp, shouldUpate) {
+    if ( mapStateToProp === void 0 ) mapStateToProp = identity;
+    if ( shouldUpate === void 0 ) shouldUpate = function (a, b) { return !isDeepEqual(a, b); };
+
+    return function (initProp) {
+      var updateFunc;
+      var previousStateSlice;
+      var componentProps = initProp;
+      var unsubscriber;
+
+      var wrapperComp = function (props) {
+        var args = [], len = arguments.length - 1;
+        while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
+
+        return comp.apply(void 0, [ props, actions ].concat( args ));
+      };
+
+      var subscribe = onMount(function (vnode) {
+        updateFunc = update(wrapperComp, vnode);
+        unsubscriber = store.subscribe(function () {
+          var stateSlice = sliceState(store.getState());
+          if (shouldUpate(previousStateSlice, stateSlice)) {
+            Object.assign(componentProps, mapStateToProp(stateSlice));
+            updateFunc(componentProps);
+            previousStateSlice = stateSlice;
+          }
+        });
+      });
+
+      var unsubscribe = onUnMount(function () {
+        unsubscriber();
+      });
+
+      return compose(subscribe, unsubscribe)(wrapperComp);
+    };
+  };
+};
+
 exports.h = h;
 exports.elm = elm;
 exports.withState = withState;
 exports.render = render;
 exports.mount = mount;
 exports.update = update;
+exports.isDeepEqual = isDeepEqual;
 exports.onMount = onMount;
 exports.onUnMount = onUnMount;
+exports.connect = connect;
+exports.onUpdate = onUpdate;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

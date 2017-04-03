@@ -1,5 +1,6 @@
 import zora from 'zora';
-import {traverse, isShallowEqual, pairify} from '../lib/util';
+import {isShallowEqual, pairify} from '../lib/util';
+import {traverse} from '../lib/traverse';
 
 export default zora()
   .test('should traverse a tree (going deep first)', function * (t) {
