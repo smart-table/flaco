@@ -1,6 +1,6 @@
 {
   "name": "flaco",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "view engine library",
   "main": "./dist/index.js",
   "jsnext:main": "./index.js",
