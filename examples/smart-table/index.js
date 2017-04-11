@@ -1,13 +1,18 @@
-import {h, mount, onMount, connect} from '../../index';
+import {h, mount, connect, onUpdate, onMount} from '../../index';
 import {PersonList} from './components/tbody';
 import {WorkInProgress} from './components/loadingIndicator';
 import {Headers} from './components/headers';
 import {Footer} from './components/footer';
 import store from './lib/store';
+import keyboard from 'smart-table-keyboard';
+import {compose} from 'smart-table-operators';
 
-const PersonTable = onMount(() => {
+const table = onMount(n => {
   store.dispatch({type: 'exec', args: []}); //kick smartTable
-}, () =>
+  keyboard(n.dom.querySelector('table'));
+});
+
+const PersonTable = table(() =>
   <div id="table-container">
     <WorkInProgress/>
     <table>

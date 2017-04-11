@@ -43,14 +43,16 @@ const FilterRowComp = focusOnOpen((props = {}) => {
     }
   };
 
-  return <tr id={idName} class="filter-row" onKeydown={onKeyDown} aria-hidden={String(isHidden !== true)}>
-    <th colspan="6">
+  const ariaHidden = isHidden !== true;
+  return <tr id={idName} class="filter-row" onKeydown={onKeyDown} data-keyboard-skip={ariaHidden}
+             aria-hidden={String(ariaHidden)}>
+    <th colspan="6" data-keyboard-selector="input, select">
       <form name={props.scope} onSubmit={onSubmit}>
         {props.children}
-        <div class="buttons-container">
-          <button>Apply</button>
-          <button onClick={close} type="button">Cancel</button>
+        <div class="visually-hidden">
+          <button tabIndex="-1">Apply</button>
         </div>
+        <p id={idName + '-instruction'}>Press Enter to activate filter or escape to dismiss</p>
       </form>
     </th>
   </tr>
@@ -62,7 +64,8 @@ const FilterButton = (props) => {
   const controlled = ['filter'].concat(columnPointer.split('.')).join('-');
   const onClick = () => toggleFilterMenu(columnPointer);
   const isActive = currentFilterClauses.length && currentFilterClauses.some(clause => clause.value);
-  return <button class={isActive ? 'active-filter' : ''} aria-controls={controlled} onClick={onClick}>F</button>
+  return <button aria-haspopup="true" tabindex="-1" class={isActive ? 'active-filter' : ''} aria-controls={controlled}
+                 onClick={onClick}>F</button>
 };
 
 export const ToggleFilterButton = subscribeToFilter((props, actions) => {
@@ -72,6 +75,7 @@ export const ToggleFilterButton = subscribeToFilter((props, actions) => {
 export const FilterRow = subscribeToFilter((props, actions) => {
   return <FilterRowComp scope={props.scope} isHidden={props.activeFilter === props.scope}
                         toggleFilterMenu={actions.toggleFilterMenu} commitFilter={actions.commitFilter}>
+
     {props.children}
   </FilterRowComp>;
 });

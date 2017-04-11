@@ -39,6 +39,11 @@ table {
     border-collapse: collapse;
 }
 
+td:focus, th:focus {
+    outline: none;
+    box-shadow: 0 0 4px 1px #6b9aff inset;
+}
+
 .gender-male {
     color: #434eff;
 }
@@ -181,6 +186,15 @@ label, .filter-row form {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.filter-row form > p {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 0.9rem;
+    font-style: italic;
+    color: #6b9aff;
 }
 
 label > span {
@@ -210,8 +224,8 @@ form button {
     display: flex;
     position: absolute;
     left: 0;
-    right: 0;
-    bottom: 0;
+    width: 100%;
+    height: 100%;
     top: 0;
     z-index: 9999;
     background: white;
@@ -277,7 +291,7 @@ tbody select {
     border-radius: 0;
 }
 
-tbody input:focus, tbody select:focus {
+tbody input:focus, select:focus {
     background: #6b9aff;
     color: white;
 }
@@ -290,6 +304,11 @@ tfoot td {
     padding: 0.5em;
 }
 
+tfoot td > div{
+    flex:inherit;
+    justify-content: space-between;
+}
+
 thead input, thead select {
     flex-basis: 75%;
     padding: 0.3rem;
@@ -299,7 +318,7 @@ thead input, thead select {
     border-radius: 0.2em;
 }
 
-thead input:focus, thead select:focus {
+thead input:focus, select:focus {
     box-shadow: 0 0 8px 0 #6b9aff;
     flex-grow: 1;
 }
@@ -332,6 +351,19 @@ thead input:focus, thead select:focus {
 .active-filter {
     background: #6b9aff;
     color: white;
+}
+
+.icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    stroke: currentColor;
+    fill: currentColor;
+    stroke-width: 0;
+}
+
+svg {
+    color: black;
 }
 
 @keyframes open {

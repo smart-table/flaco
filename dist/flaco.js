@@ -235,7 +235,7 @@ const render = function renderer (oldVnode, newVnode, parentDomNode, onNextTick 
   const {vnode, garbage} = domify(oldVnode, newVnode, parentDomNode);
 
   if (garbage !== null) {
-    // defer un mount lifecycle as it is not "visual"
+    // defer unmount lifecycle as it is not "visual"
     for (let g of traverse(garbage)) {
       if (g.onUnMount) {
         onNextTick.push(g.onUnMount);
@@ -250,7 +250,6 @@ const render = function renderer (oldVnode, newVnode, parentDomNode, onNextTick 
 
     //2. update dom attributes based on vnode prop diffing.
     //sync
-
     if (vnode.onUpdate && vnode.lifeCycle > 1) {
       vnode.onUpdate();
     }
@@ -287,7 +286,7 @@ const render = function renderer (oldVnode, newVnode, parentDomNode, onNextTick 
 };
 
 const mount = curry(function (comp, initProp, root) {
-  const vnode = comp(initProp || {});
+  const vnode = comp.nodeType !== void 0 ? comp : comp(initProp || {});
   const batch = render(null, vnode, root);
   nextTick(function () {
     for (let op of batch) {
@@ -366,24 +365,21 @@ var withState = function (comp) {
 
 //todo throw this in favor of connect only ?
 
-/**
- * Combinator to create a Elm like app
- * @param view
- */
 var elm = function (view) {
-  return function ({model, updates, subscriptions = []}) {
+  return function ({model, updates, subscriptions = []}={}) {
+    let updateFunc;
     let actionStore = {};
+    for (let update$$1 of Object.keys(updates)) {
+      actionStore[update$$1] = (...args) => {
+        model = updates[update$$1](model, ...args); //todo consider side effects, middlewares, etc
+        return updateFunc(model, actionStore);
+      };
+    }
 
-    const comp = props => view(model, actionStore);
+    const comp = () => view(model, actionStore);
 
     const initActionStore = (vnode) => {
-      const updateFunc = update(comp, vnode);
-      for (let update$$1 of Object.keys(updates)) {
-        actionStore[update$$1] = (...args) => {
-          model = updates[update$$1](model, ...args); //todo consider side effects, middlewares, etc
-          return updateFunc(model, actionStore);
-        };
-      }
+      updateFunc = update(comp, vnode);
     };
     const initSubscription = subscriptions.map(sub => vnode => sub(vnode, actionStore));
     const initFunc = compose(initActionStore, ...initSubscription);
@@ -392,26 +388,14 @@ var elm = function (view) {
   };
 };
 
-
-/*
-
-connect(store, actions, watcher)
-
-
-
-
- */
-
 /**
- * Connect combinator: will create "container" component which will subscribe to a Redux like store. and update its children whenever a specific slice of state change
+ * Connect combinator: will create "container" component which will subscribe to a Redux like store. and update its children whenever a specific slice of state change under specific circumstances
  */
 var connect = function (store, actions = {}, sliceState = identity) {
-  return function (comp, mapStateToProp = identity, shouldUpate = (a, b) => !isDeepEqual(a, b)) {
+  return function (comp, mapStateToProp = identity, shouldUpate = (a, b) => isDeepEqual(a, b) === false) {
     return function (initProp) {
-      let updateFunc;
-      let previousStateSlice;
       let componentProps = initProp;
-      let unsubscriber;
+      let updateFunc, previousStateSlice, unsubscriber;
 
       const wrapperComp = (props, ...args) => {
         return comp(props, actions, ...args);
@@ -421,7 +405,7 @@ var connect = function (store, actions = {}, sliceState = identity) {
         updateFunc = update(wrapperComp, vnode);
         unsubscriber = store.subscribe(() => {
           const stateSlice = sliceState(store.getState());
-          if (shouldUpate(previousStateSlice, stateSlice)) {
+          if (shouldUpate(previousStateSlice, stateSlice) === true) {
             Object.assign(componentProps, mapStateToProp(stateSlice));
             updateFunc(componentProps);
             previousStateSlice = stateSlice;

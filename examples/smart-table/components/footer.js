@@ -8,11 +8,26 @@ const actions = {
 const sliceState = state => state.summary;
 const subscribeToSummary = connect(store, actions, sliceState);
 
-const summary = (props) => {
+const Summary = (props) => {
   const {page, size, filteredCount} = props;
   return (<div> showing items <strong>{(page - 1) * size + (filteredCount > 0 ? 1 : 0)}</strong> -
     <strong>{Math.min(filteredCount, page * size)}</strong> of <strong>{filteredCount}</strong> matching items
   </div>);
+};
+
+const PageSize = props => {
+  const {size, slice} = props;
+  const changePageSize = (ev) => slice(1, Number(ev.target.value));
+  return <div>
+    <label>
+      Page size
+      <select tabIndex="-1" onChange={changePageSize} name="pageSize">
+        <option selected={size == 20} value="20">20 items</option>
+        <option selected={size == 30} value="30">30 items</option>
+        <option selected={size == 50} value="50">50 items</option>
+      </select>
+    </label>
+  </div>
 };
 
 const Pager = (props) => {
@@ -22,41 +37,33 @@ const Pager = (props) => {
   const isPreviousDisabled = page === 1;
   const isNextDisabled = (filteredCount - (page * size)) <= 0;
 
-  return (<div>
+  return (
     <div>
-      <button onClick={selectPreviousPage} disabled={isPreviousDisabled}>
+      <button tabIndex="-1" onClick={selectPreviousPage} disabled={isPreviousDisabled}>
         Previous
       </button>
       <small> Page - {page || 1} </small>
-      <button onClick={selectNextPage} disabled={isNextDisabled}>
+      <button tabIndex="-1" onClick={selectNextPage} disabled={isNextDisabled}>
         Next
       </button>
     </div>
-    {/*<div>*/}
-    {/*<label>*/}
-    {/*Page size*/}
-    {/*<select onChange={ev => {*/}
-    {/*directive.changePageSize(Number(ev.target.value))*/}
-    {/*}} name="pageSize">*/}
-    {/*<option selected={size == 15} value="15">15 items</option>*/}
-    {/*<option selected={size == 25} value="25">25 items</option>*/}
-    {/*<option selected={size == 50} value="50">50 items</option>*/}
-    {/*</select>*/}
-    {/*</label>*/}
-    {/*</div>*/}
-  </div>);
+  );
 };
 
-const SummaryFooter = subscribeToSummary(summary);
+const SummaryFooter = subscribeToSummary(Summary);
 const Pagination = subscribeToSummary((props, actions) => <Pager {...props} slice={actions.slice}/>);
+const SelectPageSize = subscribeToSummary((props, actions) => <PageSize {...props} slice={actions.slice}/>);
 
 export const Footer = () => <tfoot>
 <tr>
   <td colspan="3">
     <SummaryFooter/>
   </td>
-  <td colSpan="3">
+  <td colspan="2" data-keyboard-selector="button:not(:disabled)" colSpan="3">
     <Pagination/>
+  </td>
+  <td data-keyboard-selector="select">
+    <SelectPageSize/>
   </td>
 </tr>
 </tfoot>;

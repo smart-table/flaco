@@ -8,13 +8,12 @@ const actions = {
 const sliceState = json('tableState.sort').get;
 const subscribeToSort = connect(store, actions, sliceState);
 
-
 const SortButtonComponent = (props => {
   const {columnPointer, sortDirections = ['asc', 'desc'], pointer, direction, sort} = props;
   const actualCursor = columnPointer !== pointer ? -1 : sortDirections.indexOf(direction);
   const newCursor = (actualCursor + 1 ) % sortDirections.length;
   const toggleSort = () => sort({pointer: columnPointer, direction: sortDirections[newCursor]});
-  return <button onClick={toggleSort}>S</button>
+  return <button tabindex="-1" onClick={toggleSort}>B</button>
 });
 
 export const SortButton = subscribeToSort((props, actions) =>

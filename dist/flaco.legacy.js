@@ -285,7 +285,7 @@ var render = function renderer (oldVnode, newVnode, parentDomNode, onNextTick) {
   var garbage = ref.garbage;
 
   if (garbage !== null) {
-    // defer un mount lifecycle as it is not "visual"
+    // defer unmount lifecycle as it is not "visual"
     for (var i$1 = 0, list = traverse(garbage); i$1 < list.length; i$1 += 1) {
       var g = list[i$1];
 
@@ -302,7 +302,6 @@ var render = function renderer (oldVnode, newVnode, parentDomNode, onNextTick) {
 
     //2. update dom attributes based on vnode prop diffing.
     //sync
-
     if (vnode.onUpdate && vnode.lifeCycle > 1) {
       vnode.onUpdate();
     }
@@ -339,7 +338,7 @@ var render = function renderer (oldVnode, newVnode, parentDomNode, onNextTick) {
 };
 
 var mount = curry(function (comp, initProp, root) {
-  var vnode = comp(initProp || {});
+  var vnode = comp.nodeType !== void 0 ? comp : comp(initProp || {});
   var batch = render(null, vnode, root);
   nextTick(function () {
     for (var i = 0, list = batch; i < list.length; i += 1) {
@@ -431,35 +430,33 @@ var withState = function (comp) {
 
 //todo throw this in favor of connect only ?
 
-/**
- * Combinator to create a Elm like app
- * @param view
- */
 var elm = function (view) {
   return function (ref) {
+    if ( ref === void 0 ) ref={};
     var model = ref.model;
     var updates = ref.updates;
     var subscriptions = ref.subscriptions; if ( subscriptions === void 0 ) subscriptions = [];
 
+    var updateFunc;
     var actionStore = {};
+    var loop = function () {
+      var update$1 = list[i];
 
-    var comp = function (props) { return view(model, actionStore); };
+      actionStore[update$1] = function () {
+        var args = [], len = arguments.length;
+        while ( len-- ) args[ len ] = arguments[ len ];
+
+        model = updates[update$1].apply(updates, [ model ].concat( args )); //todo consider side effects, middlewares, etc
+        return updateFunc(model, actionStore);
+      };
+    };
+
+    for (var i = 0, list = Object.keys(updates); i < list.length; i += 1) loop();
+
+    var comp = function () { return view(model, actionStore); };
 
     var initActionStore = function (vnode) {
-      var updateFunc = update(comp, vnode);
-      var loop = function () {
-        var update$1 = list[i];
-
-        actionStore[update$1] = function () {
-          var args = [], len = arguments.length;
-          while ( len-- ) args[ len ] = arguments[ len ];
-
-          model = updates[update$1].apply(updates, [ model ].concat( args )); //todo consider side effects, middlewares, etc
-          return updateFunc(model, actionStore);
-        };
-      };
-
-      for (var i = 0, list = Object.keys(updates); i < list.length; i += 1) loop();
+      updateFunc = update(comp, vnode);
     };
     var initSubscription = subscriptions.map(function (sub) { return function (vnode) { return sub(vnode, actionStore); }; });
     var initFunc = compose.apply(void 0, [ initActionStore ].concat( initSubscription ));
@@ -468,18 +465,8 @@ var elm = function (view) {
   };
 };
 
-
-/*
-
-connect(store, actions, watcher)
-
-
-
-
- */
-
 /**
- * Connect combinator: will create "container" component which will subscribe to a Redux like store. and update its children whenever a specific slice of state change
+ * Connect combinator: will create "container" component which will subscribe to a Redux like store. and update its children whenever a specific slice of state change under specific circumstances
  */
 var connect = function (store, actions, sliceState) {
   if ( actions === void 0 ) actions = {};
@@ -487,13 +474,11 @@ var connect = function (store, actions, sliceState) {
 
   return function (comp, mapStateToProp, shouldUpate) {
     if ( mapStateToProp === void 0 ) mapStateToProp = identity;
-    if ( shouldUpate === void 0 ) shouldUpate = function (a, b) { return !isDeepEqual(a, b); };
+    if ( shouldUpate === void 0 ) shouldUpate = function (a, b) { return isDeepEqual(a, b) === false; };
 
     return function (initProp) {
-      var updateFunc;
-      var previousStateSlice;
       var componentProps = initProp;
-      var unsubscriber;
+      var updateFunc, previousStateSlice, unsubscriber;
 
       var wrapperComp = function (props) {
         var args = [], len = arguments.length - 1;
@@ -506,7 +491,7 @@ var connect = function (store, actions, sliceState) {
         updateFunc = update(wrapperComp, vnode);
         unsubscriber = store.subscribe(function () {
           var stateSlice = sliceState(store.getState());
-          if (shouldUpate(previousStateSlice, stateSlice)) {
+          if (shouldUpate(previousStateSlice, stateSlice) === true) {
             Object.assign(componentProps, mapStateToProp(stateSlice));
             updateFunc(componentProps);
             previousStateSlice = stateSlice;
