@@ -1,6 +1,6 @@
 {
   "name": "flaco",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "view engine library",
   "main": "./dist/index.js",
   "module": "./index.js",
