@@ -1,4 +1,4 @@
-import {h, withState, onMount} from '../../../index';
+import {h, withState} from 'flaco';
 import {debounce, trapKeydown} from './helper';
 import {Input, autoFocus} from './inputs';
 

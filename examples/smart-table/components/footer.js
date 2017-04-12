@@ -1,5 +1,5 @@
 import store from '../lib/store';
-import {connect, h} from '../../../index';
+import {connect, h} from 'flaco';
 
 
 const actions = {

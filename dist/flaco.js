@@ -7,15 +7,16 @@
 const createTextVNode = (value) => ({
   nodeType: 'Text',
   children: [],
-  props: {value}
+  props: {value},
+  lifeCycle: 0
 });
 
 /**
  * Transform hyperscript into virtual dom node
- * @param nodeType
- * @param props
- * @param children
- * @returns {*}
+ * @param nodeType {Function, String} - the HTML tag if string, a component or combinator otherwise
+ * @param props {Object} - the list of properties/attributes associated to the related node
+ * @param children - the virtual dom nodes related to the current node children
+ * @returns {Object} - a virtual dom node
  */
 function h (nodeType, props, ...children) {
   const flatChildren = children.reduce((acc, child) => {
@@ -32,7 +33,8 @@ function h (nodeType, props, ...children) {
     return {
       nodeType,
       props: props,
-      children: flatChildren
+      children: flatChildren,
+      lifeCycle: 0
     };
   } else {
     const fullProps = Object.assign({children: flatChildren}, props);
@@ -109,9 +111,9 @@ const isDeepEqual = (a, b) => {
   return aKeys.length === bKeys.length && aKeys.every(k => isDeepEqual(a[k], b[k]));
 };
 
-const identity = p => p;
+const identity = a => a;
 
-const noop = () => {
+const noop = _ => {
 };
 
 const updateDomNodeFactory = (method) => (items) => tap(domNode => {
@@ -285,9 +287,19 @@ const render = function renderer (oldVnode, newVnode, parentDomNode, onNextTick 
   return onNextTick;
 };
 
+function hydrate (vnode, dom) {
+  'use strict';
+  const hydrated = Object.assign({}, vnode);
+  const domChildren = Array.from(dom.childNodes).filter(n => n.nodeType !== 3 || n.nodeValue.trim() !== '');
+  hydrated.dom = dom;
+  hydrated.children = vnode.children.map((child, i) => hydrate(child, domChildren[i]));
+  return hydrated;
+}
+
 const mount = curry(function (comp, initProp, root) {
   const vnode = comp.nodeType !== void 0 ? comp : comp(initProp || {});
-  const batch = render(null, vnode, root);
+  const oldVNode = root.children.length ? hydrate(vnode, root.children[0]) : null;
+  const batch = render(oldVNode, vnode, root);
   nextTick(function () {
     for (let op of batch) {
       op();
@@ -298,9 +310,9 @@ const mount = curry(function (comp, initProp, root) {
 
 /**
  * Create a function which will trigger an update of the component with the passed state
- * @param comp
- * @param initialVNode
- * @returns {function(*=, ...[*])}
+ * @param comp {Function} - the component to update
+ * @param initialVNode - the initial virtual dom node related to the component (ie once it has been mounted)
+ * @returns {Function} - the update function
  */
 function update (comp, initialVNode) {
   let oldNode = initialVNode;
@@ -340,12 +352,15 @@ const onMount = lifeCycleFactory('onMount');
  */
 const onUnMount = lifeCycleFactory('onUnMount');
 
+/**
+ * life cycle: before the component is updated
+ */
 const onUpdate = lifeCycleFactory('onUpdate');
 
 /**
  * Combinator to create a "stateful component": ie it will have its own state and the ability to update its own tree
- * @param comp
- * @returns {Function}
+ * @param comp {Function} - the component
+ * @returns {Function} - a new wrapped component
  */
 var withState = function (comp) {
   return function () {
@@ -363,8 +378,11 @@ var withState = function (comp) {
   };
 };
 
-//todo throw this in favor of connect only ?
-
+/**
+ * Combinator to create a Elm like app
+ * @param view {Function} - a component which takes as arguments the current model and the list of updates
+ * @returns {Function} - a Elm like application whose properties "model", "updates" and "subscriptions" will define the related domain specific objects
+ */
 var elm = function (view) {
   return function ({model, updates, subscriptions = []}={}) {
     let updateFunc;
@@ -390,6 +408,13 @@ var elm = function (view) {
 
 /**
  * Connect combinator: will create "container" component which will subscribe to a Redux like store. and update its children whenever a specific slice of state change under specific circumstances
+ * @param store {Object} - The store (implementing the same api than Redux store
+ * @param actions {Object} [{}] - The list of actions the connected component will be able to trigger
+ * @param sliceState {Function} [state => state] - A function which takes as argument the state and return a "transformed" state (like partial, etc) relevant to the container
+ * @returns {Function} - A container factory with the following arguments:
+ *  - comp: the component to wrap note the actions object will be passed as second argument of the component for convenience
+ *  - mapStateToProp: a function which takes as argument what the "sliceState" function returns and returns an object to be blended into the properties of the component (default to identity function)
+ *  - shouldUpdate: a function which takes as arguments the previous and the current versions of what "sliceState" function returns to returns a boolean defining whether the component should be updated (default to a deepEqual check)
  */
 var connect = function (store, actions = {}, sliceState = identity) {
   return function (comp, mapStateToProp = identity, shouldUpate = (a, b) => isDeepEqual(a, b) === false) {

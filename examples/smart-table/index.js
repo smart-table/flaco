@@ -1,4 +1,4 @@
-import {h, mount, connect, onUpdate, onMount} from '../../index';
+import {h, mount, connect, onUpdate, onMount} from 'flaco';
 import {PersonList} from './components/tbody';
 import {WorkInProgress} from './components/loadingIndicator';
 import {Headers} from './components/headers';

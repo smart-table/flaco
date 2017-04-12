@@ -4,15 +4,16 @@ import {h} from '../index';
 export default zora()
   .test('create regular html node', function * (t) {
     const vnode = h('div', {id: 'someId', "class": 'special'});
-    t.deepEqual(vnode, {nodeType: 'div', props: {id: 'someId', "class": 'special'}, children: []});
+    t.deepEqual(vnode, {lifeCycle: 0, nodeType: 'div', props: {id: 'someId', "class": 'special'}, children: []});
   })
   .test('create regular html node with text node children', function * (t) {
     const vnode = h('div', {id: 'someId', "class": 'special'}, 'foo');
     t.deepEqual(vnode, {
-      nodeType: 'div', props: {id: 'someId', "class": 'special'}, children: [{
+      nodeType: 'div', lifeCycle: 0, props: {id: 'someId', "class": 'special'}, children: [{
         nodeType: 'Text',
         children: [],
-        props: {value: 'foo'}
+        props: {value: 'foo'},
+        lifeCycle: 0
       }]
     });
   })
@@ -21,22 +22,27 @@ export default zora()
     t.deepEqual(vnode, {
       nodeType: 'ul',
       props: {id: 'collection'},
+      lifeCycle: 0,
       children: [
         {
           nodeType: 'li',
           props: {id: 1},
+          lifeCycle: 0,
           children: [{
             nodeType: 'Text',
             props: {value: 'item1'},
-            children: []
+            children: [],
+            lifeCycle: 0
           }]
         }, {
           nodeType: 'li',
           props: {id: 2},
+          lifeCycle: 0,
           children: [{
             nodeType: 'Text',
             props: {value: 'item2'},
-            children: []
+            children: [],
+            lifeCycle: 0
           }]
         }
       ]
@@ -47,9 +53,11 @@ export default zora()
     const vnode = h(foo, {id: 1}, 'hello world');
     t.deepEqual(vnode, {
       nodeType: 'p',
+      lifeCycle: 0,
       props: {
         children: [{
           nodeType: 'Text',
+          lifeCycle: 0,
           children: [],
           props: {value: 'hello world'}
         }],
@@ -61,6 +69,6 @@ export default zora()
   .test('use nested combinator to create vnode', function * (t) {
     const combinator = () => () => () => () => (props) => h('p', {id: 'foo'});
     const vnode = h(combinator, {});
-    t.deepEqual(vnode, {nodeType: 'p', props: {id: 'foo'}, children: []});
+    t.deepEqual(vnode, {nodeType: 'p', lifeCycle: 0, props: {id: 'foo'}, children: []});
   })
 

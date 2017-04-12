@@ -1,4 +1,4 @@
-import {h, connect, onUpdate} from '../../../index';
+import {h, connect, onUpdate} from 'flaco';
 import store from '../lib/store';
 
 const focusOnOpen = onUpdate(vnode => {

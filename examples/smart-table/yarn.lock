@@ -163,9 +163,9 @@ fill-range@^2.1.0:
     repeat-element "^1.1.2"
     repeat-string "^1.5.2"
 
-flaco@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/flaco/-/flaco-0.0.1.tgz#9f4a73868b8d623e3b271ade83815a80743bf3f2"
+flaco@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/flaco/-/flaco-0.1.0.tgz#43885f7b3a4807560f243118bdab55bd3f1a78f8"
   dependencies:
     smart-table-operators "^2.0.1"
 
