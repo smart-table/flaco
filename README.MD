@@ -22,7 +22,6 @@ or
 If you wish to benefit from [JSX](https://facebook.github.io/react/docs/introducing-jsx.html) syntax, tell your transpiler to use the **h** pragma instead of the default "createElement" set for [React](https://facebook.github.io/react/) in most of the module bundlers.
 
 example with [Rollup](rollupjs.org) and [buble](https://buble.surge.sh/)
-<details><summary>Rollup configuration file</summary>
 ```Javascript
 //rollup.config.js
 
@@ -43,7 +42,6 @@ export default {
   format: "iife"
 };
 ```
-</details>
 
 ## Usage
 
