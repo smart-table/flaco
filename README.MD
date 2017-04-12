@@ -1,11 +1,13 @@
 # Flaco
 
+[![CircleCI](https://circleci.com/gh/smart-table/flaco.svg?style=svg)](https://circleci.com/gh/smart-table/flaco)
+
 **currently in Beta**, API may change or break pretty often.
 
-Yet another view engine based on [hyperscript]() and virtual dom.
+Yet another view engine based on [hyperscript](https://github.com/hyperhype/hyperscript) and virtual dom.
 
-In **Flaco**, the base unit, component, is *just* [pure]() and [stateless]() functions which should be deterministic and easy to test. 
-You can then use any combinator (aka higher order function) to give more specificity (perhaps loosing the purity or statelessness) to your components and embrace the programming paradigm you prefer (stateful components, [Elm]() or [Redux]() like architecture, observables, etc) 
+In **Flaco**, the base unit, component, is *just* [pure](https://github.com/hemanth/functional-programming-jargon#purity) and *stateless* functions which should be deterministic and easy to test.
+You can then use any combinator (aka higher order function) to give more specificity (perhaps loosing the purity or statelessness) to your components and embrace the programming paradigm you prefer (stateful components, [Elm](https://guide.elm-lang.org/) or [Redux](https://github.com/reactjs/redux) like architecture, observables, etc)
 
 Ah, and Flaco is about **2kb**  minified and gzipped while providing a wide range of *features*, difficult to beat (that is about 400 lines of source code) !
 
@@ -17,9 +19,9 @@ or
 
 ``npm install --save flaco``
 
-If you wish to benefit from [JSX]() syntax, tell your transpiler to use the **h** pragma instead of the default "createElement" set for [React]() in most of the module bundlers.
+If you wish to benefit from [JSX](https://facebook.github.io/react/docs/introducing-jsx.html) syntax, tell your transpiler to use the **h** pragma instead of the default "createElement" set for [React](https://facebook.github.io/react/) in most of the module bundlers.
 
-example with [Rollup]() and [buble]()
+example with [Rollup](rollupjs.org) and [buble](https://buble.surge.sh/)
 ```Javascript
 //rollup.config.js
 
@@ -65,7 +67,7 @@ mount(HelloWorld, {hello:'Buenas dias', world:'mundo'}, document.getElementById(
 // or mount(<HelloWorld hello='Buenas dias', world='mundo'/>,{},document.getElementById('someContainer'));
 ```
 
-Note the mount function is [curried]() so you can somehow reuse it to mount it in different places for example
+Note the mount function is [curried](https://github.com/hemanth/functional-programming-jargon#currying) so you can somehow reuse it to mount it in different places for example
  
 ```Jsx
 const mountInFrench = mount(HelloWorld, {hello:'Bonjour', world:'monde'});    
@@ -74,12 +76,14 @@ mountInFrench(document.getElementById('here'));
 mountInFrench(document.getElementById('andThere')); 
 ```
 
-[See in CodePen]()
+[See in CodePen](http://codepen.io/lorenzofox3/pen/GmRNzp)
+
+If the node you try to mount your component in has already a dom tree, flaco will try to *hydrate* the dom tree. It means that with flaco you can have [progressive web app](https://dev.opera.com/articles/pwa-resources/) without changing a single line of code !
 
 ### Use combinator to create state ... (or the beginning of the end)
 
 Without any doubt, you will want the user to interact with your shiny user interface and you will need somehow to manage application states. Flaco itself does not make any assumption on how to do it but provide few combinators (higher order function for your components) to create common patterns.
-They are shipped with the core module but don't worry with any good module bundler (like [Rollup]()) you'll be able to tree shake the parts you don't use (and anyway the full Flaco lib remains probably one of the smallest UI library you may know)
+They are shipped with the core module but don't worry with any good module bundler (like Rollup) you'll be able to tree shake the parts you don't use (and anyway the full Flaco lib remains probably one of the smallest UI library you may know)
    
 #### Self contained state
 
@@ -130,17 +134,17 @@ mount(() => (
   document.getElementById('main'));
 ```
 
-[See in CodePen]()
+[See in CodePen](http://codepen.io/lorenzofox3/pen/ZKELYj)
 
 #### Global application state (the Elm way)
 
-With [Elm](), application state (or **model**) is global and can only be modified through **updates**. Any change in the model will make the **view** render with the updated state.
+With [Elm](https://guide.elm-lang.org/), application state (or **model**) is global and can only be modified through **updates**. Any change in the model will make the **view** render with the updated state.
 For convenience, Flaco will pass updates as second argument of the view.
 Use the elm combinator on your view component and then mount it anywhere with the initial model and the list of available updates.
 Your updates should return a new state of the model
 
 ```Jsx
-import {elm as app, h, mount} from '../../index';
+import {elm as app, h, mount} from 'flaco';
 
 const model = {
   firstCounter: {count: 3},
@@ -177,12 +181,14 @@ const App = app(view);
 mount((props) => <App model={props.model} updates={props.updates}/>, {model, updates}, document.getElementById('main'));
 ```
 
+[CodePen](http://codepen.io/lorenzofox3/pen/NjWdRw)
+
 Note you can have multiple apps in the same document. However you should make sure updates and models are in their isolated silos.
 
-#### Global/Partial application state ([Redux]() store like)
+#### Global/Partial application state (Redux store like)
 
-[Redux]() itself has been inspired by Elm architecture and share some patterns. Lately, it has been one of the most popular application state container.
-The **connect** combinator allows you to create a [Container component]() which will listen to changes of a specific slice of the global state. These containers help you to have a more fine grained control on which part of the dom tree you want to update.
+Redux itself has been inspired by Elm architecture and share some patterns. Lately, it has been one of the most popular application state container.
+The **connect** combinator allows you to create a [Container component](https://medium.com/@learnreact/container-components-c0e67432e005) which will listen to changes of a specific slice of the global state. These containers help you to have a more fine grained control on which part of the dom tree you want to update.
 
 Assuming you have the following redux configuration:
 
@@ -306,7 +312,7 @@ mount(() => <div>
 </div>, {}, document.getElementById('main'));
 ```
 
-[CodePen]()
+[CodePen](http://codepen.io/lorenzofox3/pen/eWYgWx)
 
 ### Life cycles
 
@@ -364,7 +370,7 @@ mount(() => <div>
 </div>, {}, main);
 ```
 
-See [Codepen]();
+See [Codepen](http://codepen.io/lorenzofox3/pen/ybLgEG);
 
 ## More examples
 
