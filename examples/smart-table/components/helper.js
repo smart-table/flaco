@@ -1,4 +1,4 @@
-import {h, onMount} from '../../../index';
+import {h} from '../../../index';
 
 export function debounce (fn, delay = 300) {
   let timeoutId;
@@ -11,7 +11,6 @@ export function debounce (fn, delay = 300) {
     }, delay);
   };
 }
-
 export const trapKeydown = (...keys) => (ev) => {
   const {keyCode} =ev;
   if (keys.indexOf(keyCode) === -1) {

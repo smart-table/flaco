@@ -1,6 +1,7 @@
 import store from '../lib/store';
 import {connect, h, onUpdate} from '../../../index';
 import {EditableLastName, EditableBirthDate, EditableSize, EditableGender, EditableFirstName} from './editableCell';
+import {IconBin} from './icons'
 
 const mapStateToProp = state => ({persons: state});
 const doesUpdateList = (previous, current) => {
@@ -33,7 +34,9 @@ const TBody = focusFirstCell(({persons = [], patch, remove}) => {
         <EditableGender className="col-gender fixed-size" person={value} index={index} patch={patch}/>
         <EditableSize className="col-size fixed-size" person={value} index={index} patch={patch}/>
         <td class="fixed-size col-actions" data-keyboard-selector="button">
-          <button tabindex="-1" onClick={() => remove(index)}>R
+          <button tabindex="-1" onClick={() => remove(index)}>
+            <span class="visually-hidden">{'Delete ' + value.name.last + ' ' + value.name.first}</span>
+            <IconBin/>
           </button>
         </td>
       </tr>)

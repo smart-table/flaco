@@ -135,6 +135,8 @@ var identity = function (a) { return a; };
 var noop = function (_) {
 };
 
+var SVG_NP = 'http://www.w3.org/2000/svg';
+
 var updateDomNodeFactory = function (method) { return function (items) { return tap(function (domNode) {
   for (var i = 0, list = items; i < list.length; i += 1) {
     var pair = list[i];
@@ -170,10 +172,14 @@ var removeAttributes = function (items) { return tap(function (domNode) {
 
 var setTextNode = function (val) { return function (node) { return node.textContent = val; }; };
 
-var createDomNode = function (vnode) {
-  return vnode.nodeType !== 'Text' ?
-    document.createElement(vnode.nodeType) :
-    document.createTextNode(String(vnode.props.value));
+var createDomNode = function (vnode, parent) {
+  if (vnode.nodeType === 'svg') {
+    return document.createElementNS(SVG_NP, vnode.nodeType);
+  } else if (vnode.nodeType === 'Text') {
+    return document.createTextNode(vnode.nodeType);
+  } else {
+    return parent.namespaceURI === SVG_NP ? document.createElementNS(SVG_NP, vnode.nodeType) : document.createElement(vnode.nodeType);
+  }
 };
 
 var getEventListeners = function (props) {
@@ -244,7 +250,7 @@ var domFactory = createDomNode;
 var domify = function updateDom (oldVnode, newVnode, parentDomNode) {
   if (!oldVnode) {//there is no previous vnode
     if (newVnode) {//new node => we insert
-      newVnode.dom = parentDomNode.appendChild(domFactory(newVnode));
+      newVnode.dom = parentDomNode.appendChild(domFactory(newVnode, parentDomNode));
       newVnode.lifeCycle = 1;
       return {vnode: newVnode, garbage: null};
     } else {//else (irrelevant)
@@ -255,7 +261,7 @@ var domify = function updateDom (oldVnode, newVnode, parentDomNode) {
       parentDomNode.removeChild(oldVnode.dom);
       return ({garbage: oldVnode, dom: null});
     } else if (newVnode.nodeType !== oldVnode.nodeType) {//it must be replaced
-      newVnode.dom = domFactory(newVnode);
+      newVnode.dom = domFactory(newVnode, parentDomNode);
       newVnode.lifeCycle = 1;
       parentDomNode.replaceChild(newVnode.dom, oldVnode.dom);
       return {garbage: oldVnode, vnode: newVnode};

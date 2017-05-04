@@ -1,5 +1,6 @@
-import {h, connect, onUpdate} from 'flaco';
+import {h, connect, onUpdate} from '../../../index';
 import store from '../lib/store';
+import {IconFilter} from './icons';
 
 const focusOnOpen = onUpdate(vnode => {
   const ah = vnode.props['aria-hidden'];
@@ -65,11 +66,14 @@ const FilterButton = (props) => {
   const onClick = () => toggleFilterMenu(columnPointer);
   const isActive = currentFilterClauses.length && currentFilterClauses.some(clause => clause.value);
   return <button aria-haspopup="true" tabindex="-1" class={isActive ? 'active-filter' : ''} aria-controls={controlled}
-                 onClick={onClick}>F</button>
+                 onClick={onClick}>
+    <span class="visually-hidden">Toggle Filter menu</span>
+    <IconFilter/>
+  </button>
 };
 
 export const ToggleFilterButton = subscribeToFilter((props, actions) => {
-  return <FilterButton {...props} toggleFilterMenu={actions.toggleFilterMenu}/>
+  return <FilterButton {...props} toggleFilterMenu={actions.toggleFilterMenu}/>;
 });
 
 export const FilterRow = subscribeToFilter((props, actions) => {

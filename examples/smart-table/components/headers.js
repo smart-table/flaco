@@ -5,7 +5,6 @@ import {SearchRow} from './search';
 import {FilterRow, ToggleFilterButton} from './filter';
 import {trapKeydown} from './helper';
 
-
 const ColumnHeader = (props) => {
   const {columnPointer, sortDirections = ['asc', 'desc'], className, children} = props;
 
@@ -17,7 +16,6 @@ const ColumnHeader = (props) => {
     </div>
   </th>
 };
-
 
 export const Headers = () => {
 

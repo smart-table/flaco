@@ -1,4 +1,4 @@
-import {h, withState} from 'flaco';
+import {h, withState} from '../../../index';
 import {debounce, trapKeydown} from './helper';
 import {Input, autoFocus} from './inputs';
 
@@ -13,7 +13,7 @@ const toggleOnKeyDown = props => (ev) => {
 
 const InputCell = (props) => {
 
-  const onKeydown = toggleOnKeyDown(props)
+  const onKeydown = toggleOnKeyDown(props);
 
   return <td tabIndex="-1" onKeyDown={onKeydown} onClick={props.toggleEdit(true)} class={props.className}>
     {
@@ -23,7 +23,7 @@ const InputCell = (props) => {
                onBlur={props.toggleEdit(false)}/>
         : <span>{props.currentValue}</span>
     }
-  </td>
+  </td>;
 };
 
 const makeEditable = comp => {
@@ -43,7 +43,7 @@ export const EditableLastName = makeEditable((props) => {
   });
 
   return <InputCell isEditing={String(isEditing === true)} toggleEdit={toggleEdit} className={className}
-                    currentValue={currentValue} onInput={onInput}/>
+                    currentValue={currentValue} onInput={onInput}/>;
 });
 
 export const EditableFirstName = makeEditable((props) => {

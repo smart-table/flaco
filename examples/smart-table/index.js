@@ -1,11 +1,10 @@
-import {h, mount, connect, onUpdate, onMount} from 'flaco';
+import {h, mount, onMount} from '../../index';
 import {PersonList} from './components/tbody';
 import {WorkInProgress} from './components/loadingIndicator';
 import {Headers} from './components/headers';
 import {Footer} from './components/footer';
 import store from './lib/store';
 import keyboard from 'smart-table-keyboard';
-import {compose} from 'smart-table-operators';
 
 const table = onMount(n => {
   store.dispatch({type: 'exec', args: []}); //kick smartTable

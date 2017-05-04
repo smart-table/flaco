@@ -154,14 +154,6 @@ td.col-birthdate {
     min-width: 110px;
 }
 
-/*.st-sort-asc:after {*/
-/*content: '\25b3\0020';*/
-/*}*/
-
-/*.st-sort-desc:after {*/
-/*content: '\25bd\0020';*/
-/*}*/
-
 #overlay {
     display: none;
 }
@@ -250,6 +242,22 @@ button {
     position: relative;
 }
 
+.col-actions button {
+    color: #ba361c;
+    border-color: #ba361c;
+}
+
+.col-actions button:focus:not(:disabled), .col-actions button:hover:not(:disabled) {
+    box-shadow: 0 0 4px 1px #ba361c;
+    background: #ba361c;
+    color: white;
+    transition: all 0.3s;
+}
+
+.col-actions button:focus:not(:disabled):before, .col-actions button:hover:not(:disabled):before {
+    border-color: #ba361c transparent transparent transparent;
+}
+
 button:disabled {
     border: 1px solid currentColor;
     box-shadow: none;
@@ -304,8 +312,8 @@ tfoot td {
     padding: 0.5em;
 }
 
-tfoot td > div{
-    flex:inherit;
+tfoot td > div {
+    flex: inherit;
     justify-content: space-between;
 }
 
@@ -355,15 +363,11 @@ thead input:focus, select:focus {
 
 .icon {
     display: inline-block;
-    width: 1em;
-    height: 1em;
+    stroke-width: 0;
     stroke: currentColor;
     fill: currentColor;
-    stroke-width: 0;
-}
-
-svg {
-    color: black;
+    width: 1em;
+    height: 1em;
 }
 
 @keyframes open {

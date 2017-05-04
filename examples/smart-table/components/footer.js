@@ -1,6 +1,5 @@
 import store from '../lib/store';
-import {connect, h} from 'flaco';
-
+import {connect, h} from '../../../index';
 
 const actions = {
   slice: (page, size) => store.dispatch({type: 'slice', args: [{page, size}]})
