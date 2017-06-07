@@ -37,6 +37,7 @@
     "zora": "^0.3.0"
   },
   "dependencies": {
+    "rollup-plugin-babel": "^2.7.1",
     "smart-table-operators": "^2.0.1"
   }
 }

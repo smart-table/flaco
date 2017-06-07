@@ -11,7 +11,7 @@ export default {
       objectAssign: 'Object.assign'
     })
   ],
-  dest: "./examples/smart-table/bundle.js",
+  dest: "./bundle.js",
   moduleName: "smartTable",
   format: "iife",
   sourceMap: 'inline'

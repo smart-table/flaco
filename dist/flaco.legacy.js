@@ -193,7 +193,7 @@ var getEventListeners = function (props) {
  * @param vnode
  * @returns {Array}
  */
-var traverse = function (vnode) {
+var traverse =  function (vnode) {
   var output = [];
   output.push(vnode);
   if (vnode.children && vnode.children.length) {
@@ -206,7 +206,7 @@ var traverse = function (vnode) {
   return output;
 };
 
-function updateEventListeners (ref, ref$1) {
+var updateEventListeners = function (ref, ref$1) {
   if ( ref === void 0 ) ref={};
   var newNodeProps = ref.props;
   if ( ref$1 === void 0 ) ref$1={};
@@ -220,9 +220,9 @@ function updateEventListeners (ref, ref$1) {
       removeEventListeners(oldNodeEvents),
       addEventListeners(newNodeEvents)
     ) : noop;
-}
+};
 
-function updateAttributes (newVNode, oldVNode) {
+var updateAttributes = function (newVNode, oldVNode) {
   var newVNodeProps = newVNode.props || {};
   var oldVNodeProps = oldVNode.props || {};
 
@@ -242,12 +242,12 @@ function updateAttributes (newVNode, oldVNode) {
     removeAttributes(attributesToRemove),
     setAttributes(newNodeKeys.map(pairify(newVNodeProps)))
   );
-}
+};
 
 var domFactory = createDomNode;
 
 // apply vnode diffing to actual dom node (if new node => it will be mounted into the parent)
-var domify = function updateDom (oldVnode, newVnode, parentDomNode) {
+var domify = function (oldVnode, newVnode, parentDomNode) {
   if (!oldVnode) {//there is no previous vnode
     if (newVnode) {//new node => we insert
       newVnode.dom = parentDomNode.appendChild(domFactory(newVnode, parentDomNode));
@@ -267,6 +267,10 @@ var domify = function updateDom (oldVnode, newVnode, parentDomNode) {
       return {garbage: oldVnode, vnode: newVnode};
     } else {// only update attributes
       newVnode.dom = oldVnode.dom;
+      // pass the unMountHook
+      if(oldVnode.onUnMount){
+        newVnode.onUnMount = oldVnode.onUnMount;
+      }
       newVnode.lifeCycle = oldVnode.lifeCycle + 1;
       return {garbage: null, vnode: newVnode};
     }
@@ -281,7 +285,7 @@ var domify = function updateDom (oldVnode, newVnode, parentDomNode) {
  * @param onNextTick collect operations to be processed on next tick
  * @returns {Array}
  */
-var render = function renderer (oldVnode, newVnode, parentDomNode, onNextTick) {
+var render = function (oldVnode, newVnode, parentDomNode, onNextTick) {
   if ( onNextTick === void 0 ) onNextTick = [];
 
 
@@ -345,14 +349,14 @@ var render = function renderer (oldVnode, newVnode, parentDomNode, onNextTick) {
   return onNextTick;
 };
 
-function hydrate (vnode, dom) {
+var hydrate = function (vnode, dom) {
   'use strict';
   var hydrated = Object.assign({}, vnode);
   var domChildren = Array.from(dom.childNodes).filter(function (n) { return n.nodeType !== 3 || n.nodeValue.trim() !== ''; });
   hydrated.dom = dom;
   hydrated.children = vnode.children.map(function (child, i) { return hydrate(child, domChildren[i]); });
   return hydrated;
-}
+};
 
 var mount = curry(function (comp, initProp, root) {
   var vnode = comp.nodeType !== void 0 ? comp : comp(initProp || {});
@@ -454,40 +458,38 @@ var withState = function (comp) {
  * @param view {Function} - a component which takes as arguments the current model and the list of updates
  * @returns {Function} - a Elm like application whose properties "model", "updates" and "subscriptions" will define the related domain specific objects
  */
-var elm = function (view) {
-  return function (ref) {
-    if ( ref === void 0 ) ref={};
-    var model = ref.model;
-    var updates = ref.updates;
-    var subscriptions = ref.subscriptions; if ( subscriptions === void 0 ) subscriptions = [];
+var elm = function (view) { return function (ref) {
+  if ( ref === void 0 ) ref={};
+  var model = ref.model;
+  var updates = ref.updates;
+  var subscriptions = ref.subscriptions; if ( subscriptions === void 0 ) subscriptions = [];
 
-    var updateFunc;
-    var actionStore = {};
-    var loop = function () {
-      var update$1 = list[i];
+  var updateFunc;
+  var actionStore = {};
+  var loop = function () {
+    var update$1 = list[i];
 
-      actionStore[update$1] = function () {
-        var args = [], len = arguments.length;
-        while ( len-- ) args[ len ] = arguments[ len ];
+    actionStore[update$1] = function () {
+      var args = [], len = arguments.length;
+      while ( len-- ) args[ len ] = arguments[ len ];
 
-        model = updates[update$1].apply(updates, [ model ].concat( args )); //todo consider side effects, middlewares, etc
-        return updateFunc(model, actionStore);
-      };
+      model = updates[update$1].apply(updates, [ model ].concat( args )); //todo consider side effects, middlewares, etc
+      return updateFunc(model, actionStore);
     };
-
-    for (var i = 0, list = Object.keys(updates); i < list.length; i += 1) loop();
-
-    var comp = function () { return view(model, actionStore); };
-
-    var initActionStore = function (vnode) {
-      updateFunc = update(comp, vnode);
-    };
-    var initSubscription = subscriptions.map(function (sub) { return function (vnode) { return sub(vnode, actionStore); }; });
-    var initFunc = compose.apply(void 0, [ initActionStore ].concat( initSubscription ));
-
-    return onMount(initFunc, comp);
   };
-};
+
+  for (var i = 0, list = Object.keys(updates); i < list.length; i += 1) loop();
+
+  var comp = function () { return view(model, actionStore); };
+
+  var initActionStore = function (vnode) {
+    updateFunc = update(comp, vnode);
+  };
+  var initSubscription = subscriptions.map(function (sub) { return function (vnode) { return sub(vnode, actionStore); }; });
+  var initFunc = compose.apply(void 0, [ initActionStore ].concat( initSubscription ));
+
+  return onMount(initFunc, comp);
+}; };
 
 /**
  * Connect combinator: will create "container" component which will subscribe to a Redux like store. and update its children whenever a specific slice of state change under specific circumstances
@@ -500,14 +502,14 @@ var elm = function (view) {
  *  - shouldUpdate: a function which takes as arguments the previous and the current versions of what "sliceState" function returns to returns a boolean defining whether the component should be updated (default to a deepEqual check)
  */
 var connect = function (store, actions, sliceState) {
-  if ( actions === void 0 ) actions = {};
-  if ( sliceState === void 0 ) sliceState = identity;
+    if ( actions === void 0 ) actions = {};
+    if ( sliceState === void 0 ) sliceState = identity;
 
-  return function (comp, mapStateToProp, shouldUpate) {
-    if ( mapStateToProp === void 0 ) mapStateToProp = identity;
-    if ( shouldUpate === void 0 ) shouldUpate = function (a, b) { return isDeepEqual(a, b) === false; };
+    return function (comp, mapStateToProp, shouldUpate) {
+      if ( mapStateToProp === void 0 ) mapStateToProp = identity;
+      if ( shouldUpate === void 0 ) shouldUpate = function (a, b) { return isDeepEqual(a, b) === false; };
 
-    return function (initProp) {
+      return function (initProp) {
       var componentProps = initProp;
       var updateFunc, previousStateSlice, unsubscriber;
 
@@ -515,7 +517,7 @@ var connect = function (store, actions, sliceState) {
         var args = [], len = arguments.length - 1;
         while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
 
-        return comp.apply(void 0, [ props, actions ].concat( args ));
+        return comp.apply(void 0, [ Object.assign(props, mapStateToProp(sliceState(store.getState()))), actions ].concat( args ));
       };
 
       var subscribe = onMount(function (vnode) {
@@ -536,8 +538,8 @@ var connect = function (store, actions, sliceState) {
 
       return compose(subscribe, unsubscribe)(wrapperComp);
     };
-  };
-};
+
+    }};
 
 exports.h = h;
 exports.elm = elm;
