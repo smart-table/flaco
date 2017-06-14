@@ -28,11 +28,11 @@
   },
   "homepage": "https://github.com/smart-table/flaco#readme",
   "devDependencies": {
-    "rollup": "0.41.6",
+    "rollup": "^0.43.0",
     "rollup-plugin-buble": "^0.15.0",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^1.1.1",
-    "rollup-plugin-uglify": "1.0.2",
+    "rollup-plugin-uglify": "^2.0.1",
     "tape-run": "^3.0.0",
     "zora": "^0.3.0"
   },
