@@ -130,15 +130,3 @@ export default zora()
       ['mousedown', props.onMousedown],
     ]);
   })
-  // .test('create text dom node', function * (t) {
-  //   document = document || {
-  //       createElement: (arg) => {
-  //         return {element: arg};
-  //       },
-  //       createTextNode: (arg) => {
-  //         return {text: arg};
-  //       }
-  //     };
-  //   const n = createDomNode({nodeType:'Text',props:{value:'foo'}});
-  //   t.deepEqual(n,{text:'foo'});
-  // })

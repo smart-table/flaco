@@ -146,7 +146,9 @@ var updateDomNodeFactory = function (method) { return function (items) { return 
 }); }; };
 
 var removeEventListeners = updateDomNodeFactory('removeEventListener');
+
 var addEventListeners = updateDomNodeFactory('addEventListener');
+
 var setAttributes = function (items) { return tap(function (domNode) {
   var attributes = items.filter(function (ref) {
     var key = ref[0];
@@ -162,6 +164,7 @@ var setAttributes = function (items) { return tap(function (domNode) {
     value === false ? domNode.removeAttribute(key) : domNode.setAttribute(key, value);
   }
 }); };
+
 var removeAttributes = function (items) { return tap(function (domNode) {
   for (var i = 0, list = items; i < list.length; i += 1) {
     var attr = list[i];
@@ -378,9 +381,9 @@ var mount = curry(function (comp, initProp, root) {
  * @param initialVNode - the initial virtual dom node related to the component (ie once it has been mounted)
  * @returns {Function} - the update function
  */
-function update (comp, initialVNode) {
+var update = function (comp, initialVNode) {
   var oldNode = initialVNode;
-  var updateFunc = function (props) {
+  return function (props) {
     var args = [], len = arguments.length - 1;
     while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
 
@@ -393,7 +396,7 @@ function update (comp, initialVNode) {
     oldNode = Object.assign(oldNode || {}, newNode);
     // end danger zone
 
-    nextTick(function () {
+    nextTick(function (_) {
       for (var i = 0, list = nextBatch; i < list.length; i += 1) {
         var op = list[i];
 
@@ -402,8 +405,7 @@ function update (comp, initialVNode) {
     });
     return newNode;
   };
-  return updateFunc;
-}
+};
 
 var lifeCycleFactory = function (method) { return curry(function (fn, comp) { return function (props) {
   var args = [], len = arguments.length - 1;
@@ -434,24 +436,22 @@ var onUpdate = lifeCycleFactory('onUpdate');
  * @param comp {Function} - the component
  * @returns {Function} - a new wrapped component
  */
-var withState = function (comp) {
-  return function () {
-    var updateFunc;
-    var wrapperComp = function (props) {
-      var args = [], len = arguments.length - 1;
-      while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
+var withState = function (comp) { return function () {
+  var updateFunc;
+  var wrapperComp = function (props) {
+    var args = [], len = arguments.length - 1;
+    while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
 
-      //lazy evaluate updateFunc (to make sure it is defined
-      var setState = function (newState) { return updateFunc(newState); };
-      return comp.apply(void 0, [ props, setState ].concat( args ));
-    };
-    var setUpdateFunction = function (vnode) {
-      updateFunc = update(wrapperComp, vnode);
-    };
-
-    return compose(onMount(setUpdateFunction), onUpdate(setUpdateFunction))(wrapperComp);
+    //lazy evaluate updateFunc (to make sure it is defined
+    var setState = function (newState) { return updateFunc(newState); };
+    return comp.apply(void 0, [ props, setState ].concat( args ));
   };
-};
+  var setUpdateFunction = function (vnode) {
+    updateFunc = update(wrapperComp, vnode);
+  };
+
+  return compose(onMount(setUpdateFunction), onUpdate(setUpdateFunction))(wrapperComp);
+}; };
 
 /**
  * Combinator to create a Elm like app
@@ -494,15 +494,12 @@ var elm = function (view) { return function (ref) {
 /**
  * Connect combinator: will create "container" component which will subscribe to a Redux like store. and update its children whenever a specific slice of state change under specific circumstances
  * @param store {Object} - The store (implementing the same api than Redux store
- * @param actions {Object} [{}] - The list of actions the connected component will be able to trigger
  * @param sliceState {Function} [state => state] - A function which takes as argument the state and return a "transformed" state (like partial, etc) relevant to the container
  * @returns {Function} - A container factory with the following arguments:
- *  - comp: the component to wrap note the actions object will be passed as second argument of the component for convenience
  *  - mapStateToProp: a function which takes as argument what the "sliceState" function returns and returns an object to be blended into the properties of the component (default to identity function)
  *  - shouldUpdate: a function which takes as arguments the previous and the current versions of what "sliceState" function returns to returns a boolean defining whether the component should be updated (default to a deepEqual check)
  */
-var connect = function (store, actions, sliceState) {
-    if ( actions === void 0 ) actions = {};
+var connect = function (store, sliceState) {
     if ( sliceState === void 0 ) sliceState = identity;
 
     return function (comp, mapStateToProp, shouldUpate) {
@@ -517,7 +514,7 @@ var connect = function (store, actions, sliceState) {
         var args = [], len = arguments.length - 1;
         while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
 
-        return comp.apply(void 0, [ Object.assign(props, mapStateToProp(sliceState(store.getState()))), actions ].concat( args ));
+        return comp.apply(void 0, [ Object.assign(props, mapStateToProp(sliceState(store.getState()))) ].concat( args ));
       };
 
       var subscribe = onMount(function (vnode) {

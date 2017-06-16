@@ -125,13 +125,16 @@ const updateDomNodeFactory = (method) => (items) => tap(domNode => {
 });
 
 const removeEventListeners = updateDomNodeFactory('removeEventListener');
+
 const addEventListeners = updateDomNodeFactory('addEventListener');
+
 const setAttributes = (items) => tap((domNode) => {
   const attributes = items.filter(([key, value]) => typeof value !== 'function');
   for (let [key, value] of attributes) {
     value === false ? domNode.removeAttribute(key) : domNode.setAttribute(key, value);
   }
 });
+
 const removeAttributes = (items) => tap(domNode => {
   for (let attr of items) {
     domNode.removeAttribute(attr);
@@ -324,9 +327,9 @@ const mount = curry((comp, initProp, root) => {
  * @param initialVNode - the initial virtual dom node related to the component (ie once it has been mounted)
  * @returns {Function} - the update function
  */
-function update (comp, initialVNode) {
+var update = (comp, initialVNode) => {
   let oldNode = initialVNode;
-  const updateFunc = (props, ...args) => {
+  return (props, ...args) => {
     const mount$$1 = oldNode.dom.parentNode;
     const newNode = comp(Object.assign({children: oldNode.children || []}, oldNode.props, props), ...args);
     const nextBatch = render(oldNode, newNode, mount$$1);
@@ -336,15 +339,14 @@ function update (comp, initialVNode) {
     oldNode = Object.assign(oldNode || {}, newNode);
     // end danger zone
 
-    nextTick(function () {
+    nextTick(_ => {
       for (let op of nextBatch) {
         op();
       }
     });
     return newNode;
   };
-  return updateFunc;
-}
+};
 
 const lifeCycleFactory = method => curry((fn, comp) => (props, ...args) => {
   const n = comp(props, ...args);
@@ -372,20 +374,18 @@ const onUpdate = lifeCycleFactory('onUpdate');
  * @param comp {Function} - the component
  * @returns {Function} - a new wrapped component
  */
-var withState = function (comp) {
-  return function () {
-    let updateFunc;
-    const wrapperComp = (props, ...args) => {
-      //lazy evaluate updateFunc (to make sure it is defined
-      const setState = (newState) => updateFunc(newState);
-      return comp(props, setState, ...args);
-    };
-    const setUpdateFunction = (vnode) => {
-      updateFunc = update(wrapperComp, vnode);
-    };
-
-    return compose(onMount(setUpdateFunction), onUpdate(setUpdateFunction))(wrapperComp);
+var withState = (comp) => () => {
+  let updateFunc;
+  const wrapperComp = (props, ...args) => {
+    //lazy evaluate updateFunc (to make sure it is defined
+    const setState = (newState) => updateFunc(newState);
+    return comp(props, setState, ...args);
   };
+  const setUpdateFunction = (vnode) => {
+    updateFunc = update(wrapperComp, vnode);
+  };
+
+  return compose(onMount(setUpdateFunction), onUpdate(setUpdateFunction))(wrapperComp);
 };
 
 /**
@@ -417,21 +417,19 @@ var elm = (view) => ({model, updates, subscriptions = []}={}) => {
 /**
  * Connect combinator: will create "container" component which will subscribe to a Redux like store. and update its children whenever a specific slice of state change under specific circumstances
  * @param store {Object} - The store (implementing the same api than Redux store
- * @param actions {Object} [{}] - The list of actions the connected component will be able to trigger
  * @param sliceState {Function} [state => state] - A function which takes as argument the state and return a "transformed" state (like partial, etc) relevant to the container
  * @returns {Function} - A container factory with the following arguments:
- *  - comp: the component to wrap note the actions object will be passed as second argument of the component for convenience
  *  - mapStateToProp: a function which takes as argument what the "sliceState" function returns and returns an object to be blended into the properties of the component (default to identity function)
  *  - shouldUpdate: a function which takes as arguments the previous and the current versions of what "sliceState" function returns to returns a boolean defining whether the component should be updated (default to a deepEqual check)
  */
-var connect = (store, actions = {}, sliceState = identity) =>
+var connect = (store, sliceState = identity) =>
   (comp, mapStateToProp = identity, shouldUpate = (a, b) => isDeepEqual(a, b) === false) =>
     (initProp) => {
       let componentProps = initProp;
       let updateFunc, previousStateSlice, unsubscriber;
 
       const wrapperComp = (props, ...args) => {
-        return comp(Object.assign(props, mapStateToProp(sliceState(store.getState()))), actions, ...args);
+        return comp(Object.assign(props, mapStateToProp(sliceState(store.getState()))), ...args);
       };
 
       const subscribe = onMount((vnode) => {

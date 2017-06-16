@@ -1,5 +1,5 @@
 import zora from 'zora';
-import {update, mount, h} from '../../index';
+import {update, mount, h} from '../index';
 
 export default zora()
   .test('give ability to update a node (and its descendant)', function * (t) {

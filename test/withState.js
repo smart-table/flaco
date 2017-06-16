@@ -1,6 +1,6 @@
 import zora from 'zora';
-import {h, withState, mount} from '../../index';
-import {waitNextTick} from './util';
+import {h, withState, mount} from '../index';
+import {waitNextTick} from './testUtil';
 
 export default zora()
   .test('bind an update function to a component', function * (t) {
@@ -38,4 +38,4 @@ export default zora()
     t.equal(container.innerHTML, '<div><p>bis</p><p>bar2</p></div>');
     update2({foo: 'blah'});
     t.equal(container.innerHTML, '<div><p>bis</p><p>blah</p></div>');
-  })
+  });

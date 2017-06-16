@@ -1,6 +1,6 @@
 import zora from 'zora';
-import {onMount, onUnMount, h, mount, render} from '../../index';
-import {waitNextTick} from './util'
+import {onMount, onUnMount, h, mount, render} from '../index';
+import {waitNextTick} from './testUtil'
 
 export default zora()
   .test('should run a function when component is mounted', function * (t) {

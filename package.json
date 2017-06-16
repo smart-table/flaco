@@ -5,6 +5,7 @@
   "main": "./dist/index.js",
   "module": "./index.js",
   "scripts": {
+    "test:dev": "rollup -c ./test/rollup.conf.js --watch",
     "test": "rollup -c ./test/rollup.conf.js && cat ./test/dist/bundle.js | tape-run",
     "build": "npm run build:dist:modern && npm run build:dist:legacy",
     "build:dist:legacy": "rollup -c rollup.legacy.js",
@@ -28,16 +29,17 @@
   },
   "homepage": "https://github.com/smart-table/flaco#readme",
   "devDependencies": {
+    "redux": "^3.6.0",
     "rollup": "^0.43.0",
     "rollup-plugin-buble": "^0.15.0",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^1.1.1",
     "rollup-plugin-uglify": "^2.0.1",
+    "rollup-watch": "^4.0.0",
     "tape-run": "^3.0.0",
     "zora": "^0.3.0"
   },
   "dependencies": {
-    "rollup-plugin-babel": "^2.7.1",
     "smart-table-operators": "^2.0.1"
   }
 }

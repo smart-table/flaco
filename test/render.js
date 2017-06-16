@@ -1,5 +1,5 @@
 import zora from 'zora';
-import {mount, h} from '../../index';
+import {mount, h} from '../index';
 
 export default zora()
   .test('mount a simple component', function * (t) {

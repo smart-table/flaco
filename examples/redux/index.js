@@ -19,23 +19,25 @@ const reducer = (state = {}, action) => {
 
 const store = createStore(reducer);
 
-const subscribeToFirstCounter = connect(store, {
+const action1 = {
   increment: () => store.dispatch({type: 'INCREMENT_1'}),
   decrement: () => store.dispatch({type: 'DECREMENT_1'})
-}, state => state.firstCounter);
-const subscribeToSecondCounter = connect(store, {
+};
+const subscribeToFirstCounter = connect(store, state => state.firstCounter);
+const action2 = {
   increment: () => store.dispatch({type: 'INCREMENT_2'}),
   decrement: () => store.dispatch({type: 'DECREMENT_2'})
-}, state => state.secondCounter);
+};
+const subscribeToSecondCounter = connect(store, state => state.secondCounter);
 
-const counter = ({count, label}, actions) => {
+const counter = ({count, label}) => {
 
   const bingo = count % 2 === 0;
 
   return <div bingo={bingo}>
     <span>Count: {count}</span>
-    <button onClick={actions.increment}>increment {label}</button>
-    <button onClick={actions.decrement}>decrement {label}</button>
+    <button onClick={action1.increment}>increment {label}</button>
+    <button onClick={action1.decrement}>decrement {label}</button>
   </div>
 };
 
