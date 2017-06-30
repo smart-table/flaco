@@ -2,7 +2,7 @@
   "name": "flaco",
   "version": "1.0.0",
   "description": "view engine library",
-  "main": "./dist/index.js",
+  "main": "./dist/flaco.js",
   "module": "./index.js",
   "scripts": {
     "test:dev": "rollup -c ./test/rollup.conf.js --watch",
