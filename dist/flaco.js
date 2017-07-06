@@ -350,7 +350,9 @@ var update = (comp, initialVNode) => {
 
 const lifeCycleFactory = method => curry((fn, comp) => (props, ...args) => {
   const n = comp(props, ...args);
-  n[method] = () => fn(n, ...args);
+  const applyFn = () => fn(n, ...args);
+  const current = n[method];
+  n[method] = current ? compose(current, applyFn) : applyFn;
   return n;
 });
 

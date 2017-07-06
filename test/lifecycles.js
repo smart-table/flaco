@@ -15,6 +15,21 @@ export default zora()
     yield waitNextTick();
     t.equal(counter, 1);
   })
+  .test('should compose the mount function when there are many', function * (t) {
+    let counter = 0;
+    const container = document.createElement('div');
+    const comp = () => <p>hello world</p>;
+    const withMount = onMount(() => {
+      counter++
+    }, comp);
+    const Combined = onMount(() => {
+      counter = counter * 10
+    }, withMount);
+    mount(Combined, {}, container);
+    t.equal(counter, 0);
+    yield waitNextTick();
+    t.equal(counter, 10);
+  })
   .test('should run a function when component is unMounted', function * (t) {
     let unmounted = null;
     const container = document.createElement('div');
@@ -31,7 +46,7 @@ export default zora()
     t.equal(container.innerHTML, '<ul><li id="1">hello world</li><li id="2">hello world</li><li id="3">hello world</li></ul>');
     const batch = render(vnode, containerComp({items: [{id: 1}, {id: 3}]}), container);
     t.equal(container.innerHTML, '<ul><li id="1">hello world</li><li id="3">hello world</li></ul>');
-    for (let f of batch){
+    for (let f of batch) {
       f();
     }
     t.notEqual(unmounted, null);

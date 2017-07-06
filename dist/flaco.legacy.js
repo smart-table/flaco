@@ -412,7 +412,9 @@ var lifeCycleFactory = function (method) { return curry(function (fn, comp) { re
   while ( len-- > 0 ) args[ len ] = arguments[ len + 1 ];
 
   var n = comp.apply(void 0, [ props ].concat( args ));
-  n[method] = function () { return fn.apply(void 0, [ n ].concat( args )); };
+  var applyFn = function () { return fn.apply(void 0, [ n ].concat( args )); };
+  var current = n[method];
+  n[method] = current ? compose(current, applyFn) : applyFn;
   return n;
 }; }); };
 
