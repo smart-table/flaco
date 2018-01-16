@@ -1,9 +1,9 @@
 import zora from 'zora';
 import {h, withState, mount} from '../index';
-import {waitNextTick} from './testUtil';
+import {waitNextTick} from './test-util';
 
 export default zora()
-  .test('bind an update function to a component', function * (t) {
+  .test('bind an update function to a component', async t => {
     let update = null;
     const Comp = withState(({foo}, setState) => {
       if (!update) {
@@ -14,11 +14,11 @@ export default zora()
     const container = document.createElement('div');
     mount(({foo}) => <Comp foo={foo}/>, {foo: 'bar'}, container);
     t.equal(container.innerHTML, '<p>bar</p>');
-    yield waitNextTick();
+    await waitNextTick();
     update({foo: 'bis'});
     t.equal(container.innerHTML, '<p>bis</p>');
   })
-  .test('should create isolated state for each component', function * (t) {
+  .test('should create isolated state for each component', async t => {
     let update1 = null;
     let update2 = null;
     const Comp = withState(({foo}, setState) => {
@@ -33,7 +33,7 @@ export default zora()
     const container = document.createElement('div');
     mount(({foo1, foo2}) => <div><Comp foo={foo1}/><Comp foo={foo2}/></div>, {foo1: 'bar', foo2: 'bar2'}, container);
     t.equal(container.innerHTML, '<div><p>bar</p><p>bar2</p></div>');
-    yield waitNextTick();
+    await waitNextTick();
     update1({foo: 'bis'});
     t.equal(container.innerHTML, '<div><p>bis</p><p>bar2</p></div>');
     update2({foo: 'blah'});

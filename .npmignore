@@ -2,5 +2,5 @@
 examples
 test
 node_modules
-rollup.legacy.js
-rollup.modern.js
+rollup/rollup.legacy.js
+rollup/rollup.modern.js

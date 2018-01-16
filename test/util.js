@@ -1,9 +1,9 @@
 import zora from 'zora';
 import {isShallowEqual, pairify} from '../lib/util';
-import {traverse} from '../lib/traverse';
+import traverse from '../lib/traverse';
 
 export default zora()
-  .test('should traverse a tree (going deep first)', function * (t) {
+  .test('should traverse a tree (going deep first)', t => {
     const tree = {
       id: 1,
       children: [
@@ -16,13 +16,13 @@ export default zora()
     const sequence = [...traverse(tree)].map(n => n.id);
     t.deepEqual(sequence, [1, 2, 3, 4, 5, 6, 7]);
   })
-  .test('pair key to value object of an object (aka Object.entries)', function * (t) {
+  .test('pair key to value object of an object (aka Object.entries)', t => {
     const holder = {a: 1, b: 2, c: 3, d: 4};
     const f = pairify(holder);
     const data = Object.keys(holder).map(f);
     t.deepEqual(data, [['a', 1], ['b', 2], ['c', 3], ['d', 4]]);
   })
-  .test('shallow equality test on object', function * (t) {
+  .test('shallow equality test on object', t => {
     const nested = {foo: 'bar'};
     const obj1 = {a: 1, b: '2', c: true, d: nested};
     t.ok(isShallowEqual(obj1, {a: 1, b: '2', c: true, d: nested}));

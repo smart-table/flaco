@@ -1,23 +1,23 @@
 import zora from 'zora';
 import {h, connect, mount} from '../index';
 import {createStore} from 'redux';
-import {waitNextTick} from './testUtil';
+import {waitNextTick} from './test-util';
 
 export default zora()
-  .test('should connect a component to changes of redux state', function * (t) {
+  .test('should connect a component to changes of redux state', async t => {
     const store = createStore((state, action) => ({value: action.value}));
     const Comp = connect(store)(props => {
       return <span>{props.value}</span>
     });
     const container = document.createElement('div');
     mount(<Comp />, {}, container);
-    yield waitNextTick();
+    await waitNextTick();
     store.dispatch({type: 'whatever', value: 'blah'});
     t.equal(container.innerHTML, '<span>blah</span>');
     store.dispatch({type: 'whatever', value: 'woot'});
     t.equal(container.innerHTML, '<span>woot</span>');
   })
-  .test('should connect a component to changes of a slice of a redux state', function * (t) {
+  .test('should connect a component to changes of a slice of a redux state', async t => {
     const store = createStore((state = {woot: {value: 'foo'}, other: {valueBis: 'blah'}}, action) => {
       const {type} = action;
       switch (type) {
@@ -34,7 +34,7 @@ export default zora()
     });
     const container = document.createElement('div');
     mount(<Comp />, {}, container);
-    yield waitNextTick();
+    await waitNextTick();
     store.dispatch({type: 'whatever', value: 'blah'});
     t.equal(container.innerHTML, '<span>foo</span>');
     store.dispatch({type: 'NOT_WOOT', value: 'blah'});
@@ -42,7 +42,7 @@ export default zora()
     store.dispatch({type: 'WOOT', value: 'bip'});
     t.equal(container.innerHTML, '<span>bip</span>');
   })
-  .test('should give a condition to update a connected component', function * (t) {
+  .test('should give a condition to update a connected component', async t => {
     const store = createStore((state, action) => ({value: action.value}));
     const Comp = connect(store)(props => {
       return <span>{props.value}</span>
@@ -51,7 +51,7 @@ export default zora()
     });
     const container = document.createElement('div');
     mount(<Comp />, {}, container);
-    yield waitNextTick();
+    await waitNextTick();
     store.dispatch({type: 'whatever', value: 'blah'});
     t.equal(container.innerHTML, '<span>blah</span>');
     store.dispatch({type: 'whatever', value: 'aaa'});
