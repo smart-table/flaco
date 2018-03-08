@@ -31,15 +31,16 @@
     "babel-core": "^6.26.0",
     "babel-plugin-transform-react-jsx": "^6.24.1",
     "redux": "^3.7.2",
-    "rollup": "^0.54.0",
+    "rollup": "^0.56.5",
     "rollup-plugin-babel": "^3.0.3",
-    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-commonjs": "^9.0.0",
+    "rollup-plugin-node-resolve": "^3.2.0",
     "rollup-plugin-replace": "^2.0.0",
     "tape-run": "^3.0.0",
     "xo": "^0.18.2",
-    "zora": "^1.1.4"
+    "zora": "^2.0.0"
   },
   "dependencies": {
-    "smart-table-operators": "^2.0.1"
+    "smart-table-operators": "^2.0.4"
   }
 }

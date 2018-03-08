@@ -1,207 +1,140 @@
-var test = (function () {
+(function () {
 'use strict';
-
-const stringify = JSON.stringify;
-const printTestHeader = test => console.log(`# ${test.description} - ${test.executionTime}ms`);
-const printTestCase = (assertion, id) => {
-	const pass = assertion.pass;
-	const status = pass === true ? 'ok' : 'not ok';
-	console.log(`${status} ${id} ${assertion.message}`);
-	if (pass !== true) {
-		console.log(`  ---
-    operator: ${assertion.operator}
-    expected: ${stringify(assertion.expected)}
-    actual: ${stringify(assertion.actual)}
-    at: ${assertion.at || ''}
-  ...
-`);
-	}
-};
-const printSummary = ({ count, pass, fail, skipped, executionTime }) => {
-	console.log(`
-1..${count}
-# duration ${executionTime}ms
-# ${skipped > 0 ? '🚨' : ''}tests ${count} (${skipped} skipped)
-# pass  ${pass}
-# ${fail > 0 ? '🚨' : ''}fail  ${fail} 
-		`);
-};
-
-var tap = ({ displaySkipped = false } = {}) => function* () {
-	const startTime = Date.now();
-	let pass = 0;
-	let fail = 0;
-	let id = 0;
-	let skipped = 0;
-	console.log('TAP version 13');
-	try {
-		/* eslint-disable no-constant-condition */
-		while (true) {
-			const test = yield;
-
-			if (test.items.length === 0) {
-				skipped++;
-			}
-
-			if (test.items.length > 0 || displaySkipped === true) {
-				printTestHeader(test);
-			}
-
-			for (const assertion of test.items) {
-				id++;
-				if (assertion.pass === true) {
-					pass++;
-				} else {
-					fail++;
-				}
-				printTestCase(assertion, id);
-			}
-		}
-		/* eslint-enable no-constant-condition */
-	} catch (err) {
-		console.log('Bail out! unhandled exception');
-		throw err;
-	} finally {
-		const executionTime = Date.now() - startTime;
-		printSummary({ count: id, executionTime, skipped, pass, fail });
-	}
-};
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
 
 var keys = createCommonjsModule(function (module, exports) {
-	exports = module.exports = typeof Object.keys === 'function' ? Object.keys : shim;
+exports = module.exports = typeof Object.keys === 'function' ? Object.keys : shim;
 
-	exports.shim = shim;
-	function shim(obj) {
-		var keys = [];
-		for (var key in obj) keys.push(key);
-		return keys;
-	}
+exports.shim = shim;
+function shim(obj) {
+  var keys = [];
+  for (var key in obj) keys.push(key);
+  return keys;
+}
 });
-
 var keys_1 = keys.shim;
 
 var is_arguments = createCommonjsModule(function (module, exports) {
-	var supportsArgumentsClass = function () {
-		return Object.prototype.toString.call(arguments);
-	}() == '[object Arguments]';
+var supportsArgumentsClass = function () {
+  return Object.prototype.toString.call(arguments);
+}() == '[object Arguments]';
 
-	exports = module.exports = supportsArgumentsClass ? supported : unsupported;
+exports = module.exports = supportsArgumentsClass ? supported : unsupported;
 
-	exports.supported = supported;
-	function supported(object) {
-		return Object.prototype.toString.call(object) == '[object Arguments]';
-	}
-
-	exports.unsupported = unsupported;
-	function unsupported(object) {
-		return object && typeof object == 'object' && typeof object.length == 'number' && Object.prototype.hasOwnProperty.call(object, 'callee') && !Object.prototype.propertyIsEnumerable.call(object, 'callee') || false;
-	}
-});
-
+exports.supported = supported;
+function supported(object) {
+  return Object.prototype.toString.call(object) == '[object Arguments]';
+}
+exports.unsupported = unsupported;
+function unsupported(object) {
+  return object && typeof object == 'object' && typeof object.length == 'number' && Object.prototype.hasOwnProperty.call(object, 'callee') && !Object.prototype.propertyIsEnumerable.call(object, 'callee') || false;
+}});
 var is_arguments_1 = is_arguments.supported;
 var is_arguments_2 = is_arguments.unsupported;
 
 var deepEqual_1 = createCommonjsModule(function (module) {
-	var pSlice = Array.prototype.slice;
+var pSlice = Array.prototype.slice;
 
-	var deepEqual = module.exports = function (actual, expected, opts) {
-		if (!opts) opts = {};
-		// 7.1. All identical values are equivalent, as determined by ===.
-		if (actual === expected) {
-			return true;
-		} else if (actual instanceof Date && expected instanceof Date) {
-			return actual.getTime() === expected.getTime();
 
-			// 7.3. Other pairs that do not both pass typeof value == 'object',
-			// equivalence is determined by ==.
-		} else if (!actual || !expected || typeof actual != 'object' && typeof expected != 'object') {
-			return opts.strict ? actual === expected : actual == expected;
 
-			// 7.4. For all other Object pairs, including Array objects, equivalence is
-			// determined by having the same number of owned properties (as verified
-			// with Object.prototype.hasOwnProperty.call), the same set of keys
-			// (although not necessarily the same order), equivalent values for every
-			// corresponding key, and an identical 'prototype' property. Note: this
-			// accounts for both named and indexed properties on Arrays.
-		} else {
-			return objEquiv(actual, expected, opts);
-		}
-	};
+var deepEqual = module.exports = function (actual, expected, opts) {
+  if (!opts) opts = {};
+  // 7.1. All identical values are equivalent, as determined by ===.
+  if (actual === expected) {
+    return true;
+  } else if (actual instanceof Date && expected instanceof Date) {
+    return actual.getTime() === expected.getTime();
 
-	function isUndefinedOrNull(value) {
-		return value === null || value === undefined;
-	}
+    // 7.3. Other pairs that do not both pass typeof value == 'object',
+    // equivalence is determined by ==.
+  } else if (!actual || !expected || typeof actual != 'object' && typeof expected != 'object') {
+    return opts.strict ? actual === expected : actual == expected;
 
-	function isBuffer(x) {
-		if (!x || typeof x !== 'object' || typeof x.length !== 'number') return false;
-		if (typeof x.copy !== 'function' || typeof x.slice !== 'function') {
-			return false;
-		}
-		if (x.length > 0 && typeof x[0] !== 'number') return false;
-		return true;
-	}
+    // 7.4. For all other Object pairs, including Array objects, equivalence is
+    // determined by having the same number of owned properties (as verified
+    // with Object.prototype.hasOwnProperty.call), the same set of keys
+    // (although not necessarily the same order), equivalent values for every
+    // corresponding key, and an identical 'prototype' property. Note: this
+    // accounts for both named and indexed properties on Arrays.
+  } else {
+    return objEquiv(actual, expected, opts);
+  }
+};
 
-	function objEquiv(a, b, opts) {
-		var i, key;
-		if (isUndefinedOrNull(a) || isUndefinedOrNull(b)) return false;
-		// an identical 'prototype' property.
-		if (a.prototype !== b.prototype) return false;
-		//~~~I've managed to break Object.keys through screwy arguments passing.
-		//   Converting to array solves the problem.
-		if (is_arguments(a)) {
-			if (!is_arguments(b)) {
-				return false;
-			}
-			a = pSlice.call(a);
-			b = pSlice.call(b);
-			return deepEqual(a, b, opts);
-		}
-		if (isBuffer(a)) {
-			if (!isBuffer(b)) {
-				return false;
-			}
-			if (a.length !== b.length) return false;
-			for (i = 0; i < a.length; i++) {
-				if (a[i] !== b[i]) return false;
-			}
-			return true;
-		}
-		try {
-			var ka = keys(a),
-			    kb = keys(b);
-		} catch (e) {
-			//happens when one is a string literal and the other isn't
-			return false;
-		}
-		// having the same number of owned properties (keys incorporates
-		// hasOwnProperty)
-		if (ka.length != kb.length) return false;
-		//the same set of keys (although not necessarily the same order),
-		ka.sort();
-		kb.sort();
-		//~~~cheap key test
-		for (i = ka.length - 1; i >= 0; i--) {
-			if (ka[i] != kb[i]) return false;
-		}
-		//equivalent values for every corresponding key, and
-		//~~~possibly expensive deep test
-		for (i = ka.length - 1; i >= 0; i--) {
-			key = ka[i];
-			if (!deepEqual(a[key], b[key], opts)) return false;
-		}
-		return typeof a === typeof b;
-	}
+function isUndefinedOrNull(value) {
+  return value === null || value === undefined;
+}
+
+function isBuffer(x) {
+  if (!x || typeof x !== 'object' || typeof x.length !== 'number') return false;
+  if (typeof x.copy !== 'function' || typeof x.slice !== 'function') {
+    return false;
+  }
+  if (x.length > 0 && typeof x[0] !== 'number') return false;
+  return true;
+}
+
+function objEquiv(a, b, opts) {
+  var i, key;
+  if (isUndefinedOrNull(a) || isUndefinedOrNull(b)) return false;
+  // an identical 'prototype' property.
+  if (a.prototype !== b.prototype) return false;
+  //~~~I've managed to break Object.keys through screwy arguments passing.
+  //   Converting to array solves the problem.
+  if (is_arguments(a)) {
+    if (!is_arguments(b)) {
+      return false;
+    }
+    a = pSlice.call(a);
+    b = pSlice.call(b);
+    return deepEqual(a, b, opts);
+  }
+  if (isBuffer(a)) {
+    if (!isBuffer(b)) {
+      return false;
+    }
+    if (a.length !== b.length) return false;
+    for (i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+  try {
+    var ka = keys(a),
+        kb = keys(b);
+  } catch (e) {
+    //happens when one is a string literal and the other isn't
+    return false;
+  }
+  // having the same number of owned properties (keys incorporates
+  // hasOwnProperty)
+  if (ka.length != kb.length) return false;
+  //the same set of keys (although not necessarily the same order),
+  ka.sort();
+  kb.sort();
+  //~~~cheap key test
+  for (i = ka.length - 1; i >= 0; i--) {
+    if (ka[i] != kb[i]) return false;
+  }
+  //equivalent values for every corresponding key, and
+  //~~~possibly expensive deep test
+  for (i = ka.length - 1; i >= 0; i--) {
+    key = ka[i];
+    if (!deepEqual(a[key], b[key], opts)) return false;
+  }
+  return typeof a === typeof b;
+}
 });
 
 const getAssertionLocation = () => {
 	const err = new Error();
 	const stack = (err.stack || '').split('\n');
-	return (stack[3] || '').replace(/^at/i, '').trim();
+	return (stack[3] || '').trim().replace(/^at/i, '');
 };
+
 const assertMethodHook = fn => function (...args) {
 	const assertResult = fn(...args);
 
@@ -214,54 +147,54 @@ const assertMethodHook = fn => function (...args) {
 };
 
 const Assertion = {
-	ok: assertMethodHook((val, message = 'should be truthy') => ({
+	ok: assertMethodHook((val, description = 'should be truthy') => ({
 		pass: Boolean(val),
 		actual: val,
 		expected: true,
-		message,
+		description,
 		operator: 'ok'
 	})),
-	deepEqual: assertMethodHook((actual, expected, message = 'should be equivalent') => ({
+	deepEqual: assertMethodHook((actual, expected, description = 'should be equivalent') => ({
 		pass: deepEqual_1(actual, expected),
 		actual,
 		expected,
-		message,
+		description,
 		operator: 'deepEqual'
 	})),
-	equal: assertMethodHook((actual, expected, message = 'should be equal') => ({
+	equal: assertMethodHook((actual, expected, description = 'should be equal') => ({
 		pass: actual === expected,
 		actual,
 		expected,
-		message,
+		description,
 		operator: 'equal'
 	})),
-	notOk: assertMethodHook((val, message = 'should not be truthy') => ({
+	notOk: assertMethodHook((val, description = 'should not be truthy') => ({
 		pass: !val,
 		expected: false,
 		actual: val,
-		message,
+		description,
 		operator: 'notOk'
 	})),
-	notDeepEqual: assertMethodHook((actual, expected, message = 'should not be equivalent') => ({
+	notDeepEqual: assertMethodHook((actual, expected, description = 'should not be equivalent') => ({
 		pass: !deepEqual_1(actual, expected),
 		actual,
 		expected,
-		message,
+		description,
 		operator: 'notDeepEqual'
 	})),
-	notEqual: assertMethodHook((actual, expected, message = 'should not be equal') => ({
+	notEqual: assertMethodHook((actual, expected, description = 'should not be equal') => ({
 		pass: actual !== expected,
 		actual,
 		expected,
-		message,
+		description,
 		operator: 'notEqual'
 	})),
-	throws: assertMethodHook((func, expected, message) => {
+	throws: assertMethodHook((func, expected, description) => {
 		let caught;
 		let pass;
 		let actual;
 		if (typeof expected === 'string') {
-			[expected, message] = [message, expected];
+			[expected, description] = [description, expected];
 		}
 		try {
 			func();
@@ -282,13 +215,13 @@ const Assertion = {
 			expected,
 			actual,
 			operator: 'throws',
-			message: message || 'should throw'
+			description: description || 'should throw'
 		};
 	}),
-	doesNotThrow: assertMethodHook((func, expected, message) => {
+	doesNotThrow: assertMethodHook((func, expected, description) => {
 		let caught;
 		if (typeof expected === 'string') {
-			[expected, message] = [message, expected];
+			[expected, description] = [description, expected];
 		}
 		try {
 			func();
@@ -300,368 +233,306 @@ const Assertion = {
 			expected: 'no thrown error',
 			actual: caught && caught.error,
 			operator: 'doesNotThrow',
-			message: message || 'should not throw'
+			description: description || 'should not throw'
 		};
 	}),
-	fail: assertMethodHook((message = 'fail called') => ({
+	fail: assertMethodHook((description = 'fail called') => ({
 		pass: false,
 		actual: 'fail called',
 		expected: 'fail not called',
-		message,
+		description,
 		operator: 'fail'
 	}))
 };
 
-var assert = collect => Object.create(Assertion, { collect: { value: collect } });
-
-const noop = () => {};
-
-const skip = description => test('SKIPPED - ' + description, noop);
-
-const Test = {
-	async run() {
-		const collect = assertion => this.items.push(assertion);
-		const start = Date.now();
-		await Promise.resolve(this.spec(assert(collect)));
-		const executionTime = Date.now() - start;
-		return Object.assign(this, {
-			executionTime
-		});
-	},
-	skip() {
-		return skip(this.description);
+var assert = ((collect, test) => Object.assign(Object.create(Assertion, { collect: { value: collect } }), {
+	async test(description, spec) {
+		// Note: we return the task so the caller can control whether he wants to wait for the sub test to complete or not
+		return test(description, spec).task;
 	}
-};
+}));
 
-function test(description, spec, { only = false } = {}) {
-	return Object.create(Test, {
-		items: { value: [] },
-		only: { value: only },
-		spec: { value: spec },
-		description: { value: description }
-	});
-}
+const tester = (collect, { offset = 0 } = {}) => (description, spec) => {
+	const buffer = [{ type: 'title', data: description, offset }];
+	const result = { count: 0, pass: true, description, spec };
+	let done = false;
 
-const onNextTick = val => new Promise(resolve => setTimeout(() => resolve(val), 0));
-
-const PlanProto = {
-	[Symbol.iterator]() {
-		return this.items[Symbol.iterator]();
-	},
-	test(description, spec, opts) {
-		if (!spec && description.test) {
-			// If it is a plan
-			this.items.push(...description);
-		} else {
-			this.items.push(test(description, spec, opts));
-		}
-		return this;
-	},
-	only(description, spec) {
-		return this.test(description, spec, { only: true });
-	},
-	skip(description, spec) {
-		if (!spec && description.test) {
-			// If it is a plan we skip the whole plan
-			for (const t of description) {
-				this.items.push(t.skip());
-			}
-		} else {
-			this.items.push(skip(description));
-		}
-		return this;
-	},
-	async run(sink = tap()) {
-		const sinkIterator = sink();
-		sinkIterator.next();
-		try {
-			const hasOnly = this.items.some(t => t.only);
-			const tests = hasOnly ? this.items.map(t => t.only ? t : t.skip()) : this.items;
-			const runningTests = tests.map(t => t.run());
-			/* eslint-disable no-await-in-loop */
-			for (const r of runningTests) {
-				const executedTest = await onNextTick(r); // Force to resolve on next tick so consumer can do something with previous iteration result (until async iterator are natively supported ...)
-				sinkIterator.next(executedTest);
-			}
-			/* eslint-enable no-await-in-loop */
-		} catch (err) {
-			sinkIterator.throw(err);
-		} finally {
-			sinkIterator.return();
-		}
-	}
-};
-
-function factory() {
-	return Object.create(PlanProto, {
-		items: { value: [] }, length: {
-			get() {
-				return this.items.length;
-			}
-		}
-	});
-}
-
-const nextTick = fn => setTimeout(fn, 0);
-
-const pairify = holder => key => [key, holder[key]];
-
-const isShallowEqual = (a, b) => {
-	const aKeys = Object.keys(a);
-	const bKeys = Object.keys(b);
-	return aKeys.length === bKeys.length && aKeys.every(k => a[k] === b[k]);
-};
-
-const ownKeys = obj => Object.getOwnPropertyNames(obj);
-
-const isDeepEqual = (a, b) => {
-	const type = typeof a;
-	const typeB = typeof b;
-
-	// Short path(s)
-	if (a === b) {
-		return true;
-	}
-
-	if (type !== typeB) {
-		return false;
-	}
-
-	if (type !== 'object') {
-		return a === b;
-	}
-
-	// Objects ...
-	if (a === null || b === null) {
-		return false;
-	}
-
-	if (Array.isArray(a)) {
-		return a.length && b.length && a.every((item, i) => isDeepEqual(a[i], b[i]));
-	}
-
-	const aKeys = ownKeys(a);
-	const bKeys = ownKeys(b);
-	return aKeys.length === bKeys.length && aKeys.every(k => isDeepEqual(a[k], b[k]));
-};
-
-const identity = a => a;
-
-const noop$1 = () => {};
-
-function* traverse(vnode) {
-	yield vnode;
-	if (vnode.children && vnode.children.length > 0) {
-		for (const child of vnode.children) {
-			yield* traverse(child);
-		}
-	}
-}
-
-var util = factory().test('should traverse a tree (going deep first)', t => {
-  const tree = {
-    id: 1,
-    children: [{ id: 2, children: [{ id: 3 }, { id: 4 }] }, { id: 5, children: [{ id: 6 }] }, { id: 7 }]
-  };
-
-  const sequence = [...traverse(tree)].map(n => n.id);
-  t.deepEqual(sequence, [1, 2, 3, 4, 5, 6, 7]);
-}).test('pair key to value object of an object (aka Object.entries)', t => {
-  const holder = { a: 1, b: 2, c: 3, d: 4 };
-  const f = pairify(holder);
-  const data = Object.keys(holder).map(f);
-  t.deepEqual(data, [['a', 1], ['b', 2], ['c', 3], ['d', 4]]);
-}).test('shallow equality test on object', t => {
-  const nested = { foo: 'bar' };
-  const obj1 = { a: 1, b: '2', c: true, d: nested };
-  t.ok(isShallowEqual(obj1, { a: 1, b: '2', c: true, d: nested }));
-  t.notOk(isShallowEqual(obj1, {
-    a: 1,
-    b: '2',
-    c: true,
-    d: { foo: 'bar' }
-  }), 'nested object should be checked by reference');
-  t.notOk(isShallowEqual(obj1, { a: 1, b: 2, c: true, d: nested }), 'exact type checking on primitive');
-  t.notOk(isShallowEqual(obj1, { a: 1, c: true, d: nested }), 'return false on missing properties');
-  t.notOk(isShallowEqual({ a: 1, c: true, d: nested }, obj1), 'return false on missing properties (commmutative');
-});
-
-function compose(first, ...fns) {
-  return (...args) => fns.reduce((previous, current) => current(previous), first(...args));
-}
-
-function curry(fn, arityLeft) {
-  const arity = arityLeft || fn.length;
-  return (...args) => {
-    const argLength = args.length || 1;
-    if (arity === argLength) {
-      return fn(...args);
-    } else {
-      const func = (...moreArgs) => fn(...args, ...moreArgs);
-      return curry(func, arity - args.length);
-    }
-  };
-}
-
-
-
-function tap$1(fn) {
-  return arg => {
-    fn(arg);
-    return arg;
-  };
-}
-
-/* eslint-disable no-undef */
-const SVG_NP = 'http://www.w3.org/2000/svg';
-
-const updateDomNodeFactory = method => items => tap$1(domNode => {
-	for (const pair of items) {
-		domNode[method](...pair);
-	}
-});
-
-const removeEventListeners = updateDomNodeFactory('removeEventListener');
-
-const addEventListeners = updateDomNodeFactory('addEventListener');
-
-const setAttributes = items => tap$1(domNode => {
-	const attributes = items.filter(pair => typeof pair.value !== 'function');
-	for (const [key, value] of attributes) {
-		if (value === false) {
-			domNode.removeAttribute(key);
-		} else {
-			domNode.setAttribute(key, value);
-		}
-	}
-});
-
-const removeAttributes = items => tap$1(domNode => {
-	for (const attr of items) {
-		domNode.removeAttribute(attr);
-	}
-});
-
-const setTextNode = val => node => {
-	node.textContent = val;
-};
-
-const createDomNode = (vnode, parent) => {
-	if (vnode.nodeType === 'svg') {
-		return document.createElementNS(SVG_NP, vnode.nodeType);
-	} else if (vnode.nodeType === 'Text') {
-		return document.createTextNode(vnode.nodeType);
-	}
-	return parent.namespaceURI === SVG_NP ? document.createElementNS(SVG_NP, vnode.nodeType) : document.createElement(vnode.nodeType);
-};
-
-const getEventListeners = props => Object.keys(props).filter(k => k.substr(0, 2) === 'on').map(k => [k.substr(2).toLowerCase(), props[k]]);
-/* eslint-enable no-undef */
-
-const domProto = {
-
-	removeAttribute(attr) {
-		delete this[attr];
-	},
-
-	setAttribute(attr, val) {
-		this[attr] = val;
-	},
-
-	addEventListener(event, handler) {
-		this.handlers[event] = handler;
-	},
-
-	removeEventListener(event, handler) {
-		delete this.handlers[event];
-	}
-};
-
-const fakeDom = () => {
-	const dom = Object.create(domProto);
-	Object.defineProperty(dom, 'handlers', { value: {} });
-	return dom;
-};
-
-const ownProps = obj => {
-	const ownProperties = [];
-	for (let prop in obj) {
-		if (obj.hasOwnProperty(prop)) {
-			ownProperties.push(prop);
-		}
-	}
-	return ownProperties;
-};
-
-var domUtil = factory().test('set attributes', t => {
-	const d = fakeDom();
-	const update = setAttributes([['foo', 'bar'], ['blah', 2], ['woot', true]]);
-	const n = update(d);
-	t.equal(n, d, 'should have forwarded dom node');
-	t.equal(d.foo, 'bar');
-	t.equal(d.blah, 2);
-	t.equal(d.woot, true);
-	const props = ownProps(d);
-	t.deepEqual(props, ['foo', 'blah', 'woot']);
-	const handlers = ownProps(d.handlers);
-	t.equal(handlers.length, 0);
-}).test('remove attribute if value is false', t => {
-	const d = fakeDom();
-	d.foo = 'bar';
-	t.deepEqual(ownProps(d), ['foo']);
-	const update = setAttributes([['foo', false]]);
-	const n = update(d);
-	t.equal(n, d, 'should have forwarded dom node');
-	t.equal(d.foo, undefined);
-	t.equal(ownProps(d).length, 0);
-	const handlers = ownProps(d.handlers);
-	t.equal(handlers.length, 0);
-}).test('remove attributes', t => {
-	const d = fakeDom();
-	d.foo = 'bar';
-	d.woot = 2;
-	d.bar = 'blah';
-	t.deepEqual(ownProps(d), ['foo', 'woot', 'bar']);
-	const update = removeAttributes(['foo', 'woot']);
-	const n = update(d);
-	t.equal(n, d, 'should have forwarded dom node');
-	t.equal(d.bar, 'blah');
-	t.equal(ownProps(d).length, 1);
-	const handlers = ownProps(d.handlers);
-	t.equal(handlers.length, 0);
-}).test('add event listeners', t => {
-	const d = fakeDom();
-	const update = addEventListeners([['click', noop$1], ['input', noop$1]]);
-	const n = update(d);
-	t.equal(n, d, 'should have forwarded the node');
-	t.equal(ownProps(d).length, 0);
-	t.deepEqual(ownProps(d.handlers), ['click', 'input']);
-	t.equal(d.handlers.click, noop$1);
-	t.equal(d.handlers.input, noop$1);
-}).test('remove event listeners', t => {
-	const d = fakeDom();
-	d.handlers.click = noop$1;
-	d.handlers.input = noop$1;
-	const update = removeEventListeners([['click', noop$1]]);
-	const n = update(d);
-	t.equal(n, d, 'should have forwarded the node');
-	t.deepEqual(ownProps(d.handlers), ['input']);
-	t.equal(d.handlers.input, noop$1);
-}).test('set text node value', function* (t) {
-	const node = {};
-	const update = setTextNode('foo');
-	update(node);
-	t.equal(node.textContent, 'foo');
-}).test('get event Listeners from props object', t => {
-	const props = {
-		onClick: () => {},
-		input: () => {},
-		onMousedown: () => {}
+	const createAssertion = item => {
+		result.pass = result.pass && item.pass;
+		return { type: 'assert', data: item, offset };
 	};
 
-	const events = getEventListeners(props);
-	t.deepEqual(events, [['click', props.onClick], ['mousedown', props.onMousedown]]);
+	const collector = item => {
+		result.count++;
+		item.id = result.count;
+		if (item[Symbol.asyncIterator] === undefined) {
+			// Assertion
+			buffer.push(createAssertion(item));
+		} else {
+			// Sub test
+			buffer.push(item);
+		}
+	};
+
+	const handleDelegate = async delegate => {
+		const { value, done } = await delegate.next();
+
+		// Delegate is exhausted: create a summary test point in the stream and throw the delegate
+		if (done === true) {
+			const { executionTime, pass, description } = value;
+			const subTestAssertion = Object.assign(createAssertion({
+				pass,
+				description,
+				id: delegate.id,
+				executionTime
+			}), { type: 'testAssert' });
+			buffer.shift();
+			buffer.unshift(subTestAssertion);
+			return instance.next();
+		}
+		return { value, done };
+	};
+
+	const subTest = tester(collector, { offset: offset + 1 });
+
+	const start = Date.now();
+	// Execute the test collecting assertions
+	const assertFn = assert(collector, subTest);
+	const task = new Promise(resolve => resolve(spec(assertFn))).then(() => {
+		// Always report a plan and summary: the calling test will know how to deal with it
+		result.executionTime = Date.now() - start;
+		buffer.push({ type: 'plan', data: { start: 1, end: result.count }, offset });
+		buffer.push({ type: 'time', data: result.executionTime, offset });
+		done = true;
+		return result;
+	}).catch(err => {
+		// We report a failing test before bail out ... while unhandled promise rejection is still allowed by nodejs...
+		buffer.push({ type: 'assert', data: { pass: false, description } });
+		buffer.push({ type: 'comment', data: 'Unhandled exception' });
+		buffer.push({ type: 'bailout', data: err, offset });
+		done = true;
+	});
+
+	const instance = {
+		test: subTest,
+		task,
+		[Symbol.asyncIterator]() {
+			return this;
+		},
+		async next() {
+			if (buffer.length === 0) {
+				if (done === true) {
+					return { done: true, value: result };
+				}
+				// Flush
+				await task;
+				return this.next();
+			}
+
+			const next = buffer[0];
+
+			// Delegate if sub test
+			if (next[Symbol.asyncIterator] !== undefined) {
+				return handleDelegate(next);
+			}
+
+			return { value: buffer.shift(), done: false };
+		}
+	};
+
+	// Collection by the calling test
+	collect(instance);
+
+	return instance;
+};
+
+const print = (message, offset = 0) => {
+	console.log(message.padStart(message.length + offset * 4)); // 4 white space used as indent (see tap-parser)
+};
+
+const toYaml = print => (obj, offset = 0) => {
+	for (const [prop, value] of Object.entries(obj)) {
+		print(`${prop}: ${JSON.stringify(value)}`, offset + 0.5);
+	}
+};
+
+const tap = print => {
+	const yaml = toYaml(print);
+	return {
+		version(version = 13) {
+			print(`TAP version ${version}`);
+		},
+		title(value, offset = 0) {
+			const message = offset > 0 ? `Subtest: ${value}` : value;
+			this.comment(message, offset);
+		},
+		assert(value, offset = 0) {
+			const { pass, description, id, executionTime, expected = '', actual = '', at = '', operator = '' } = value;
+			const label = pass === true ? 'ok' : 'not ok';
+			print(`${label} ${id} - ${description}${executionTime ? ` # time=${executionTime}ms` : ''}`, offset);
+			if (pass === false && value.operator) {
+				print('---', offset + 0.5);
+				yaml({ expected, actual, at, operator }, offset);
+				print('...', offset + 0.5);
+			}
+		},
+		plan(value, offset = 0) {
+			print(`1..${value.end}`, offset);
+		},
+		time(value, offset = 0) {
+			this.comment(`time=${value}ms`, offset);
+		},
+		comment(value, offset = 0) {
+			print(`# ${value}`, offset);
+		},
+		bailout(value = 'Unhandled exception') {
+			print(`Bail out! ${value}`);
+		},
+		testAssert(value, offset = 0) {
+			return this.assert(value, offset);
+		}
+	};
+};
+
+var tap$1 = ((printFn = print) => {
+	const reporter = tap(printFn);
+	return (toPrint = {}) => {
+		const { data, type, offset = 0 } = toPrint;
+		if (typeof reporter[type] === 'function') {
+			reporter[type](data, offset);
+		}
+		// Else ignore (unknown message type)
+	};
 });
+
+// Some combinators for asynchronous iterators: this will be way more easier when
+// Async generator are widely supported
+
+const asyncIterator = behavior => Object.assign({
+	[Symbol.asyncIterator]() {
+		return this;
+	}
+}, behavior);
+
+const filter = predicate => iterator => asyncIterator({
+	async next() {
+		const { done, value } = await iterator.next();
+
+		if (done === true) {
+			return { done };
+		}
+
+		if (!predicate(value)) {
+			return this.next();
+		}
+
+		return { done, value };
+	}
+});
+
+const map = mapFn => iterator => asyncIterator({
+	[Symbol.asyncIterator]() {
+		return this;
+	},
+	async next() {
+		const { done, value } = await iterator.next();
+		if (done === true) {
+			return { done };
+		}
+		return { done, value: mapFn(value) };
+	}
+});
+
+const stream = asyncIterator => Object.assign(asyncIterator, {
+	map(fn) {
+		return stream(map(fn)(asyncIterator));
+	},
+	filter(fn) {
+		return stream(filter(fn)(asyncIterator));
+	}
+});
+
+const combine = (...iterators) => {
+	const [...pending] = iterators;
+	let current = pending.shift();
+
+	return asyncIterator({
+		async next() {
+			if (current === undefined) {
+				return { done: true };
+			}
+
+			const { done, value } = await current.next();
+
+			if (done === true) {
+				current = pending.shift();
+				return this.next();
+			}
+
+			return { done, value };
+		}
+	});
+};
+
+let flatten = true;
+const tests = [];
+const test = tester(t => tests.push(t));
+
+// Provide a root context for BSD style test suite
+const subTest = test('Root', () => {}).test;
+test.test = (description, spec) => {
+	flatten = false; // Turn reporter into BSD style
+	return subTest(description, spec);
+};
+
+const start = async ({ reporter = tap$1() } = {}) => {
+	let count = 0;
+	let failure = 0;
+	reporter({ type: 'version', data: 13 });
+
+	// Remove the irrelevant root title
+	await tests[0].next();
+
+	let outputStream = stream(combine(...tests));
+	outputStream = flatten ? outputStream.filter(({ type }) => type !== 'testAssert').map(item => Object.assign(item, { offset: 0 })) : outputStream;
+
+	const filterOutAtRootLevel = ['plan', 'time'];
+	outputStream = outputStream.filter(item => item.offset > 0 || !filterOutAtRootLevel.includes(item.type)).map(item => {
+		if (item.offset > 0 || item.type !== 'assert' && item.type !== 'testAssert') {
+			return item;
+		}
+
+		count++;
+		item.data.id = count;
+		failure += item.data.pass ? 0 : 1;
+		return item;
+	});
+
+	// One day with for await loops ... :) !
+	while (true) {
+		const { done, value } = await outputStream.next();
+
+		if (done === true) {
+			break;
+		}
+
+		reporter(value);
+
+		if (value.type === 'bailout') {
+			throw value.data; // Rethrow but with Nodejs we keep getting the deprecation warning (unhandled promise) and the process exists with 0 exit code...
+		}
+	}
+
+	reporter({ type: 'plan', data: { start: 1, end: count } });
+	reporter({ type: 'comment', data: failure > 0 ? `failed ${failure} of ${count} tests` : 'ok' });
+};
+
+// Auto bootstrap following async env vs sync env (browser vs node)
+if (typeof window === 'undefined') {
+	setTimeout(start, 0);
+} else {
+	window.addEventListener('load', start);
+}
 
 const createTextVNode = value => ({
 	nodeType: 'Text',
@@ -730,11 +601,132 @@ function h(nodeType, props, ...children) {
 	/* eslint-enable no-negated-condition */
 }
 
+const compose = (first, ...fns) => (...args) => fns.reduce((previous, current) => current(previous), first(...args));
+
+const curry = (fn, arityLeft) => {
+	const arity = arityLeft || fn.length;
+	return (...args) => {
+		const argLength = args.length || 1;
+		if (arity === argLength) {
+			return fn(...args);
+		}
+		const func = (...moreArgs) => fn(...args, ...moreArgs);
+		return curry(func, arity - args.length);
+	};
+};
+
+const tap$2 = fn => arg => {
+	fn(arg);
+	return arg;
+};
+
+const nextTick = fn => setTimeout(fn, 0);
+
+const pairify = holder => key => [key, holder[key]];
+
+const isShallowEqual = (a, b) => {
+	const aKeys = Object.keys(a);
+	const bKeys = Object.keys(b);
+	return aKeys.length === bKeys.length && aKeys.every(k => a[k] === b[k]);
+};
+
+const ownKeys = obj => Object.getOwnPropertyNames(obj);
+
+const isDeepEqual = (a, b) => {
+	const type = typeof a;
+	const typeB = typeof b;
+
+	// Short path(s)
+	if (a === b) {
+		return true;
+	}
+
+	if (type !== typeB) {
+		return false;
+	}
+
+	if (type !== 'object') {
+		return a === b;
+	}
+
+	// Objects ...
+	if (a === null || b === null) {
+		return false;
+	}
+
+	if (Array.isArray(a)) {
+		return a.length && b.length && a.every((item, i) => isDeepEqual(a[i], b[i]));
+	}
+
+	const aKeys = ownKeys(a);
+	const bKeys = ownKeys(b);
+	return aKeys.length === bKeys.length && aKeys.every(k => isDeepEqual(a[k], b[k]));
+};
+
+const identity = a => a;
+
+const noop = () => {};
+
+/* eslint-disable no-undef */
+const SVG_NP = 'http://www.w3.org/2000/svg';
+
+const updateDomNodeFactory = method => items => tap$2(domNode => {
+	for (const pair of items) {
+		domNode[method](...pair);
+	}
+});
+
+const removeEventListeners = updateDomNodeFactory('removeEventListener');
+
+const addEventListeners = updateDomNodeFactory('addEventListener');
+
+const setAttributes = items => tap$2(domNode => {
+	const attributes = items.filter(pair => typeof pair.value !== 'function');
+	for (const [key, value] of attributes) {
+		if (value === false) {
+			domNode.removeAttribute(key);
+		} else {
+			domNode.setAttribute(key, value);
+		}
+	}
+});
+
+const removeAttributes = items => tap$2(domNode => {
+	for (const attr of items) {
+		domNode.removeAttribute(attr);
+	}
+});
+
+const setTextNode = val => node => {
+	node.textContent = val;
+};
+
+const createDomNode = (vnode, parent) => {
+	if (vnode.nodeType === 'svg') {
+		return document.createElementNS(SVG_NP, vnode.nodeType);
+	} else if (vnode.nodeType === 'Text') {
+		return document.createTextNode(vnode.nodeType);
+	}
+	return parent.namespaceURI === SVG_NP ? document.createElementNS(SVG_NP, vnode.nodeType) : document.createElement(vnode.nodeType);
+};
+
+const getEventListeners = props => Object.keys(props).filter(k => k.substr(0, 2) === 'on').map(k => [k.substr(2).toLowerCase(), props[k]]);
+/* eslint-enable no-undef */
+
+function* traverse(vnode) {
+	yield vnode;
+	if (vnode.children && vnode.children.length > 0) {
+		for (const child of vnode.children) {
+			yield* traverse(child);
+		}
+	}
+}
+
 const updateEventListeners = ({ props: newNodeProps } = {}, { props: oldNodeProps } = {}) => {
 	const newNodeEvents = getEventListeners(newNodeProps || {});
 	const oldNodeEvents = getEventListeners(oldNodeProps || {});
 
-	return newNodeEvents.length || oldNodeEvents.length ? compose(removeEventListeners(oldNodeEvents), addEventListeners(newNodeEvents)) : noop$1;
+	return newNodeEvents.length || oldNodeEvents.length ? compose(removeEventListeners(oldNodeEvents), addEventListeners(newNodeEvents)) : noop;
 };
 
 const updateAttributes = (newVNode, oldVNode) => {
@@ -742,7 +734,7 @@ const updateAttributes = (newVNode, oldVNode) => {
 	const oldVNodeProps = oldVNode.props || {};
 
 	if (isShallowEqual(newVNodeProps, oldVNodeProps)) {
-		return noop$1;
+		return noop;
 	}
 
 	if (newVNode.nodeType === 'Text') {
@@ -838,7 +830,7 @@ const render = (oldVnode, newVnode, parentDomNode, onNextTick = []) => {
 
 		// Async will be deferred as it is not "visual"
 		const setListeners = updateEventListeners(vnode, tempOldNode);
-		if (setListeners !== noop$1) {
+		if (setListeners !== noop) {
 			onNextTick.push(() => setListeners(vnode.dom));
 		}
 
@@ -987,261 +979,6 @@ var connect = ((store, sliceState = identity) => (comp, mapStateToProp = identit
 	return compose(subscribe, unsubscribe)(wrapperComp);
 });
 
-var h$1 = factory().test('create regular html node', t => {
-	const vnode = h('div', { id: 'someId', 'class': 'special' });
-	t.deepEqual(vnode, { lifeCycle: 0, nodeType: 'div', props: { id: 'someId', 'class': 'special' }, children: [] });
-}).test('normalize text node', t => {
-	const vnode = h('div', { id: 'someId', 'class': 'special' }, 'foo', 'bar');
-	t.deepEqual(vnode, {
-		nodeType: 'div',
-		props: { id: 'someId', class: 'special' },
-		children: [{ nodeType: 'Text', children: [], props: { 'value': 'foobar' }, lifeCycle: 0 }],
-		lifeCycle: 0
-	});
-}).test('create regular html node with text node children', t => {
-	const vnode = h('div', { id: 'someId', 'class': 'special' }, 'foo');
-	t.deepEqual(vnode, {
-		nodeType: 'div', lifeCycle: 0, props: { id: 'someId', 'class': 'special' }, children: [{
-			nodeType: 'Text',
-			children: [],
-			props: { value: 'foo' },
-			lifeCycle: 0
-		}]
-	});
-}).test('create regular html with children', t => {
-	const vnode = h('ul', { id: 'collection' }, h('li', { id: 1 }, 'item1'), h('li', { id: 2 }, 'item2'));
-	t.deepEqual(vnode, {
-		nodeType: 'ul',
-		props: { id: 'collection' },
-		lifeCycle: 0,
-		children: [{
-			nodeType: 'li',
-			props: { id: 1 },
-			lifeCycle: 0,
-			children: [{
-				nodeType: 'Text',
-				props: { value: 'item1' },
-				children: [],
-				lifeCycle: 0
-			}]
-		}, {
-			nodeType: 'li',
-			props: { id: 2 },
-			lifeCycle: 0,
-			children: [{
-				nodeType: 'Text',
-				props: { value: 'item2' },
-				children: [],
-				lifeCycle: 0
-			}]
-		}]
-	});
-}).test('use function as component passing the children as prop', t => {
-	const foo = props => h('p', props);
-	const vnode = h(foo, { id: 1 }, 'hello world');
-	t.deepEqual(vnode, {
-		nodeType: 'p',
-		lifeCycle: 0,
-		props: {
-			children: [{
-				nodeType: 'Text',
-				lifeCycle: 0,
-				children: [],
-				props: { value: 'hello world' }
-			}],
-			id: 1
-		},
-		children: []
-	});
-}).test('use nested combinator to create vnode', t => {
-	const combinator = () => () => () => () => props => h('p', { id: 'foo' });
-	const vnode = h(combinator, {});
-	t.deepEqual(vnode, { nodeType: 'p', lifeCycle: 0, props: { id: 'foo' }, children: [] });
-});
-
-const waitNextTick = () => new Promise(function (resolve) {
-	setTimeout(function () {
-		resolve();
-	}, 2);
-});
-
-var lifecycles = factory().test('should run a function when component is mounted', async t => {
-	let counter = 0;
-	const container = document.createElement('div');
-	const comp = () => h(
-		'p',
-		null,
-		'hello world'
-	);
-	const withMount = onMount(() => {
-		counter++;
-	}, comp);
-	mount(withMount, {}, container);
-	t.equal(counter, 0);
-	await waitNextTick();
-	t.equal(counter, 1);
-}).test('should compose the mount function when there are many', async t => {
-	let counter = 0;
-	const container = document.createElement('div');
-	const comp = () => h(
-		'p',
-		null,
-		'hello world'
-	);
-	const withMount = onMount(() => {
-		counter++;
-	}, comp);
-	const Combined = onMount(() => {
-		counter = counter * 10;
-	}, withMount);
-	mount(Combined, {}, container);
-	t.equal(counter, 0);
-	await waitNextTick();
-	t.equal(counter, 10);
-}).test('should run a function when component is unMounted', t => {
-	let unmounted = null;
-	const container = document.createElement('div');
-	const Item = onUnMount(n => {
-		unmounted = n;
-	}, ({ id }) => h(
-		'li',
-		{ id: id },
-		'hello world'
-	));
-	const containerComp = ({ items }) => h(
-		'ul',
-		null,
-		items.map(item => h(Item, item))
-	);
-
-	const vnode = mount(containerComp, { items: [{ id: 1 }, { id: 2 }, { id: 3 }] }, container);
-	t.equal(container.innerHTML, '<ul><li id="1">hello world</li><li id="2">hello world</li><li id="3">hello world</li></ul>');
-	const batch = render(vnode, containerComp({ items: [{ id: 1 }, { id: 3 }] }), container);
-	t.equal(container.innerHTML, '<ul><li id="1">hello world</li><li id="3">hello world</li></ul>');
-	for (let f of batch) {
-		f();
-	}
-	t.notEqual(unmounted, null);
-});
-
-var render$1 = factory().test('mount a simple component', t => {
-	const container = document.createElement('div');
-	const Comp = props => h(
-		'h1',
-		null,
-		h(
-			'span',
-			{ id: props.id },
-			props.greeting
-		)
-	);
-	mount(Comp, { id: 123, greeting: 'hello world' }, container);
-	t.equal(container.innerHTML, '<h1><span id="123">hello world</span></h1>');
-}).test('mount composed component', t => {
-	const container = document.createElement('div');
-	const Comp = props => h(
-		'h1',
-		null,
-		h(
-			'span',
-			{ id: props.id },
-			props.greeting
-		)
-	);
-	const Container = props => h(
-		'section',
-		null,
-		h(Comp, { id: '567', greeting: 'hello you' })
-	);
-	mount(Container, {}, container);
-	t.equal(container.innerHTML, '<section><h1><span id="567">hello you</span></h1></section>');
-}).test('mount a component with inner child', t => {
-	const container = document.createElement('div');
-	const Comp = props => h(
-		'h1',
-		null,
-		h(
-			'span',
-			{ id: props.id },
-			props.greeting
-		)
-	);
-	const Container = props => h(
-		'section',
-		null,
-		props.children
-	);
-	mount(() => h(
-		Container,
-		null,
-		h(Comp, { id: '567', greeting: 'hello world' })
-	), {}, container);
-	t.equal(container.innerHTML, '<section><h1><span id="567">hello world</span></h1></section>');
-});
-
-var update$1 = factory().test('give ability to update a node (and its descendant)', t => {
-	const container = document.createElement('div');
-	const comp = ({ id, content }) => h(
-		'p',
-		{ id: id },
-		content
-	);
-	const initialVnode = mount(comp, { id: 123, content: 'hello world' }, container);
-	t.equal(container.innerHTML, '<p id="123">hello world</p>');
-	const updateFunc = update(comp, initialVnode);
-	updateFunc({ id: 567, content: 'bonjour monde' });
-	t.equal(container.innerHTML, '<p id="567">bonjour monde</p>');
-});
-
-var withState$1 = factory().test('bind an update function to a component', async t => {
-  let update$$1 = null;
-  const Comp = withState(({ foo }, setState) => {
-    if (!update$$1) {
-      update$$1 = setState;
-    }
-    return h(
-      'p',
-      null,
-      foo
-    );
-  });
-  const container = document.createElement('div');
-  mount(({ foo }) => h(Comp, { foo: foo }), { foo: 'bar' }, container);
-  t.equal(container.innerHTML, '<p>bar</p>');
-  await waitNextTick();
-  update$$1({ foo: 'bis' });
-  t.equal(container.innerHTML, '<p>bis</p>');
-}).test('should create isolated state for each component', async t => {
-  let update1 = null;
-  let update2 = null;
-  const Comp = withState(({ foo }, setState) => {
-    if (!update1) {
-      update1 = setState;
-    } else if (!update2) {
-      update2 = setState;
-    }
-
-    return h(
-      'p',
-      null,
-      foo
-    );
-  });
-  const container = document.createElement('div');
-  mount(({ foo1, foo2 }) => h(
-    'div',
-    null,
-    h(Comp, { foo: foo1 }),
-    h(Comp, { foo: foo2 })
-  ), { foo1: 'bar', foo2: 'bar2' }, container);
-  t.equal(container.innerHTML, '<div><p>bar</p><p>bar2</p></div>');
-  await waitNextTick();
-  update1({ foo: 'bis' });
-  t.equal(container.innerHTML, '<div><p>bis</p><p>bar2</p></div>');
-  update2({ foo: 'blah' });
-  t.equal(container.innerHTML, '<div><p>bis</p><p>blah</p></div>');
-});
-
 /** Detect free variable `global` from Node.js. */
 var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
 
@@ -1319,8 +1056,8 @@ function objectToString(value) {
 }
 
 /** `Object#toString` result references. */
-var nullTag = '[object Null]';
-var undefinedTag = '[object Undefined]';
+var nullTag = '[object Null]',
+    undefinedTag = '[object Undefined]';
 
 /** Built-in value references. */
 var symToStringTag$1 = Symbol$1 ? Symbol$1.toStringTag : undefined;
@@ -1388,8 +1125,8 @@ function isObjectLike(value) {
 var objectTag = '[object Object]';
 
 /** Used for built-in method references. */
-var funcProto = Function.prototype;
-var objectProto$2 = Object.prototype;
+var funcProto = Function.prototype,
+    objectProto$2 = Object.prototype;
 
 /** Used to resolve the decompiled source of functions. */
 var funcToString = funcProto.toString;
@@ -1459,21 +1196,22 @@ function symbolObservablePonyfill(root) {
 }
 
 /* global window */
-var root$2;
+
+var root$1;
 
 if (typeof self !== 'undefined') {
-  root$2 = self;
+  root$1 = self;
 } else if (typeof window !== 'undefined') {
-  root$2 = window;
+  root$1 = window;
 } else if (typeof global !== 'undefined') {
-  root$2 = global;
+  root$1 = global;
 } else if (typeof module !== 'undefined') {
-  root$2 = module;
+  root$1 = module;
 } else {
-  root$2 = Function('return this')();
+  root$1 = Function('return this')();
 }
 
-var result = symbolObservablePonyfill(root$2);
+var result = symbolObservablePonyfill(root$1);
 
 /**
  * These are private action types reserved by Redux.
@@ -1764,75 +1502,479 @@ if ("dev" !== 'production' && typeof isCrushed.name === 'string' && isCrushed.na
   warning('You are currently using minified code outside of NODE_ENV === \'production\'. ' + 'This means that you are running a slower development build of Redux. ' + 'You can use loose-envify (https://github.com/zertosh/loose-envify) for browserify ' + 'or DefinePlugin for webpack (http://stackoverflow.com/questions/30030031) ' + 'to ensure you have the correct code for your production build.');
 }
 
-var connect$1 = factory().test('should connect a component to changes of redux state', async t => {
-  const store = createStore((state, action) => ({ value: action.value }));
-  const Comp = connect(store)(props => {
-    return h(
-      'span',
-      null,
-      props.value
-    );
-  });
-  const container = document.createElement('div');
-  mount(h(Comp, null), {}, container);
-  await waitNextTick();
-  store.dispatch({ type: 'whatever', value: 'blah' });
-  t.equal(container.innerHTML, '<span>blah</span>');
-  store.dispatch({ type: 'whatever', value: 'woot' });
-  t.equal(container.innerHTML, '<span>woot</span>');
-}).test('should connect a component to changes of a slice of a redux state', async t => {
-  const store = createStore((state = { woot: { value: 'foo' }, other: { valueBis: 'blah' } }, action) => {
-    const { type } = action;
-    switch (type) {
-      case 'WOOT':
-        return Object.assign({}, { woot: { value: action.value } });
-      case 'NOT_WOOT':
-        return Object.assign({}, { other: { valueBis: 'another_one' } });
-      default:
-        return state;
-    }
-  });
-  const Comp = connect(store, state => state.woot)(props => {
-    return h(
-      'span',
-      null,
-      props.value
-    );
-  });
-  const container = document.createElement('div');
-  mount(h(Comp, null), {}, container);
-  await waitNextTick();
-  store.dispatch({ type: 'whatever', value: 'blah' });
-  t.equal(container.innerHTML, '<span>foo</span>');
-  store.dispatch({ type: 'NOT_WOOT', value: 'blah' });
-  t.equal(container.innerHTML, '<span>foo</span>');
-  store.dispatch({ type: 'WOOT', value: 'bip' });
-  t.equal(container.innerHTML, '<span>bip</span>');
-}).test('should give a condition to update a connected component', async t => {
-  const store = createStore((state, action) => ({ value: action.value }));
-  const Comp = connect(store)(props => {
-    return h(
-      'span',
-      null,
-      props.value
-    );
-  }, state => state, (oldState = { value: 'a' }, newState = {}) => {
-    return newState.value > oldState.value;
-  });
-  const container = document.createElement('div');
-  mount(h(Comp, null), {}, container);
-  await waitNextTick();
-  store.dispatch({ type: 'whatever', value: 'blah' });
-  t.equal(container.innerHTML, '<span>blah</span>');
-  store.dispatch({ type: 'whatever', value: 'aaa' });
-  t.equal(container.innerHTML, '<span>blah</span>');
-  store.dispatch({ type: 'whatever', value: 'zzz' });
-  t.equal(container.innerHTML, '<span>zzz</span>');
+const waitNextTick = () => new Promise(function (resolve) {
+	setTimeout(function () {
+		resolve();
+	}, 2);
 });
 
-var index = factory().test(util).test(domUtil).test(h$1).test(lifecycles).test(render$1).test(update$1).test(withState$1).test(connect$1).run();
+test('should connect a component to changes of redux state', async t => {
+	const store = createStore((state, action) => ({ value: action.value }));
+	const Comp = connect(store)(props => {
+		return h(
+			'span',
+			null,
+			props.value
+		);
+	});
+	const container = document.createElement('div');
+	mount(h(Comp, null), {}, container);
+	await waitNextTick();
+	store.dispatch({ type: 'whatever', value: 'blah' });
+	t.equal(container.innerHTML, '<span>blah</span>');
+	store.dispatch({ type: 'whatever', value: 'woot' });
+	t.equal(container.innerHTML, '<span>woot</span>');
+});
+test('should connect a component to changes of a slice of a redux state', async t => {
+	const store = createStore((state = { woot: { value: 'foo' }, other: { valueBis: 'blah' } }, action) => {
+		const { type } = action;
+		switch (type) {
+			case 'WOOT':
+				return Object.assign({}, { woot: { value: action.value } });
+			case 'NOT_WOOT':
+				return Object.assign({}, { other: { valueBis: 'another_one' } });
+			default:
+				return state;
+		}
+	});
+	const Comp = connect(store, state => state.woot)(props => {
+		return h(
+			'span',
+			null,
+			props.value
+		);
+	});
+	const container = document.createElement('div');
+	mount(h(Comp, null), {}, container);
+	await waitNextTick();
+	store.dispatch({ type: 'whatever', value: 'blah' });
+	t.equal(container.innerHTML, '<span>foo</span>');
+	store.dispatch({ type: 'NOT_WOOT', value: 'blah' });
+	t.equal(container.innerHTML, '<span>foo</span>');
+	store.dispatch({ type: 'WOOT', value: 'bip' });
+	t.equal(container.innerHTML, '<span>bip</span>');
+});
+test('should give a condition to update a connected component', async t => {
+	const store = createStore((state, action) => ({ value: action.value }));
+	const Comp = connect(store)(props => {
+		return h(
+			'span',
+			null,
+			props.value
+		);
+	}, state => state, (oldState = { value: 'a' }, newState = {}) => {
+		return newState.value > oldState.value;
+	});
+	const container = document.createElement('div');
+	mount(h(Comp, null), {}, container);
+	await waitNextTick();
+	store.dispatch({ type: 'whatever', value: 'blah' });
+	t.equal(container.innerHTML, '<span>blah</span>');
+	store.dispatch({ type: 'whatever', value: 'aaa' });
+	t.equal(container.innerHTML, '<span>blah</span>');
+	store.dispatch({ type: 'whatever', value: 'zzz' });
+	t.equal(container.innerHTML, '<span>zzz</span>');
+});
 
-return index;
+const domProto = {
+
+	removeAttribute(attr) {
+		delete this[attr];
+	},
+
+	setAttribute(attr, val) {
+		this[attr] = val;
+	},
+
+	addEventListener(event, handler) {
+		this.handlers[event] = handler;
+	},
+
+	removeEventListener(event, handler) {
+		delete this.handlers[event];
+	}
+};
+
+const fakeDom = () => {
+	const dom = Object.create(domProto);
+	Object.defineProperty(dom, 'handlers', { value: {} });
+	return dom;
+};
+
+const ownProps = obj => {
+	const ownProperties = [];
+	for (let prop in obj) {
+		if (obj.hasOwnProperty(prop)) {
+			ownProperties.push(prop);
+		}
+	}
+	return ownProperties;
+};
+
+test('set attributes', t => {
+	const d = fakeDom();
+	const update = setAttributes([['foo', 'bar'], ['blah', 2], ['woot', true]]);
+	const n = update(d);
+	t.equal(n, d, 'should have forwarded dom node');
+	t.equal(d.foo, 'bar');
+	t.equal(d.blah, 2);
+	t.equal(d.woot, true);
+	const props = ownProps(d);
+	t.deepEqual(props, ['foo', 'blah', 'woot']);
+	const handlers = ownProps(d.handlers);
+	t.equal(handlers.length, 0);
+});
+test('remove attribute if value is false', t => {
+	const d = fakeDom();
+	d.foo = 'bar';
+	t.deepEqual(ownProps(d), ['foo']);
+	const update = setAttributes([['foo', false]]);
+	const n = update(d);
+	t.equal(n, d, 'should have forwarded dom node');
+	t.equal(d.foo, undefined);
+	t.equal(ownProps(d).length, 0);
+	const handlers = ownProps(d.handlers);
+	t.equal(handlers.length, 0);
+});
+test('remove attributes', t => {
+	const d = fakeDom();
+	d.foo = 'bar';
+	d.woot = 2;
+	d.bar = 'blah';
+	t.deepEqual(ownProps(d), ['foo', 'woot', 'bar']);
+	const update = removeAttributes(['foo', 'woot']);
+	const n = update(d);
+	t.equal(n, d, 'should have forwarded dom node');
+	t.equal(d.bar, 'blah');
+	t.equal(ownProps(d).length, 1);
+	const handlers = ownProps(d.handlers);
+	t.equal(handlers.length, 0);
+});
+test('add event listeners', t => {
+	const d = fakeDom();
+	const update = addEventListeners([['click', noop], ['input', noop]]);
+	const n = update(d);
+	t.equal(n, d, 'should have forwarded the node');
+	t.equal(ownProps(d).length, 0);
+	t.deepEqual(ownProps(d.handlers), ['click', 'input']);
+	t.equal(d.handlers.click, noop);
+	t.equal(d.handlers.input, noop);
+});
+test('remove event listeners', t => {
+	const d = fakeDom();
+	d.handlers.click = noop;
+	d.handlers.input = noop;
+	const update = removeEventListeners([['click', noop]]);
+	const n = update(d);
+	t.equal(n, d, 'should have forwarded the node');
+	t.deepEqual(ownProps(d.handlers), ['input']);
+	t.equal(d.handlers.input, noop);
+});
+test('set text node value', function* (t) {
+	const node = {};
+	const update = setTextNode('foo');
+	update(node);
+	t.equal(node.textContent, 'foo');
+});
+test('get event Listeners from props object', t => {
+	const props = {
+		onClick: () => {},
+		input: () => {},
+		onMousedown: () => {}
+	};
+
+	const events = getEventListeners(props);
+	t.deepEqual(events, [['click', props.onClick], ['mousedown', props.onMousedown]]);
+});
+
+test('create regular html node', t => {
+	const vnode = h('div', { id: 'someId', 'class': 'special' });
+	t.deepEqual(vnode, { lifeCycle: 0, nodeType: 'div', props: { id: 'someId', 'class': 'special' }, children: [] });
+});
+test('normalize text node', t => {
+	const vnode = h('div', { id: 'someId', 'class': 'special' }, 'foo', 'bar');
+	t.deepEqual(vnode, {
+		nodeType: 'div',
+		props: { id: 'someId', class: 'special' },
+		children: [{ nodeType: 'Text', children: [], props: { 'value': 'foobar' }, lifeCycle: 0 }],
+		lifeCycle: 0
+	});
+});
+test('create regular html node with text node children', t => {
+	const vnode = h('div', { id: 'someId', 'class': 'special' }, 'foo');
+	t.deepEqual(vnode, {
+		nodeType: 'div', lifeCycle: 0, props: { id: 'someId', 'class': 'special' }, children: [{
+			nodeType: 'Text',
+			children: [],
+			props: { value: 'foo' },
+			lifeCycle: 0
+		}]
+	});
+});
+test('create regular html with children', t => {
+	const vnode = h('ul', { id: 'collection' }, h('li', { id: 1 }, 'item1'), h('li', { id: 2 }, 'item2'));
+	t.deepEqual(vnode, {
+		nodeType: 'ul',
+		props: { id: 'collection' },
+		lifeCycle: 0,
+		children: [{
+			nodeType: 'li',
+			props: { id: 1 },
+			lifeCycle: 0,
+			children: [{
+				nodeType: 'Text',
+				props: { value: 'item1' },
+				children: [],
+				lifeCycle: 0
+			}]
+		}, {
+			nodeType: 'li',
+			props: { id: 2 },
+			lifeCycle: 0,
+			children: [{
+				nodeType: 'Text',
+				props: { value: 'item2' },
+				children: [],
+				lifeCycle: 0
+			}]
+		}]
+	});
+});
+test('use function as component passing the children as prop', t => {
+	const foo = props => h('p', props);
+	const vnode = h(foo, { id: 1 }, 'hello world');
+	t.deepEqual(vnode, {
+		nodeType: 'p',
+		lifeCycle: 0,
+		props: {
+			children: [{
+				nodeType: 'Text',
+				lifeCycle: 0,
+				children: [],
+				props: { value: 'hello world' }
+			}],
+			id: 1
+		},
+		children: []
+	});
+});
+test('use nested combinator to create vnode', t => {
+	const combinator = () => () => () => () => props => h('p', { id: 'foo' });
+	const vnode = h(combinator, {});
+	t.deepEqual(vnode, { nodeType: 'p', lifeCycle: 0, props: { id: 'foo' }, children: [] });
+});
+
+test('should run a function when component is mounted', async t => {
+	let counter = 0;
+	const container = document.createElement('div');
+	const comp = () => h(
+		'p',
+		null,
+		'hello world'
+	);
+	const withMount = onMount(() => {
+		counter++;
+	}, comp);
+	mount(withMount, {}, container);
+	t.equal(counter, 0);
+	await waitNextTick();
+	t.equal(counter, 1);
+});
+test('should compose the mount function when there are many', async t => {
+	let counter = 0;
+	const container = document.createElement('div');
+	const comp = () => h(
+		'p',
+		null,
+		'hello world'
+	);
+	const withMount = onMount(() => {
+		counter++;
+	}, comp);
+	const Combined = onMount(() => {
+		counter = counter * 10;
+	}, withMount);
+	mount(Combined, {}, container);
+	t.equal(counter, 0);
+	await waitNextTick();
+	t.equal(counter, 10);
+});
+test('should run a function when component is unMounted', t => {
+	let unmounted = null;
+	const container = document.createElement('div');
+	const Item = onUnMount(n => {
+		unmounted = n;
+	}, ({ id }) => h(
+		'li',
+		{ id: id },
+		'hello world'
+	));
+	const containerComp = ({ items }) => h(
+		'ul',
+		null,
+		items.map(item => h(Item, item))
+	);
+
+	const vnode = mount(containerComp, { items: [{ id: 1 }, { id: 2 }, { id: 3 }] }, container);
+	t.equal(container.innerHTML, '<ul><li id="1">hello world</li><li id="2">hello world</li><li id="3">hello world</li></ul>');
+	const batch = render(vnode, containerComp({ items: [{ id: 1 }, { id: 3 }] }), container);
+	t.equal(container.innerHTML, '<ul><li id="1">hello world</li><li id="3">hello world</li></ul>');
+	for (let f of batch) {
+		f();
+	}
+	t.notEqual(unmounted, null);
+});
+
+test('mount a simple component', t => {
+	const container = document.createElement('div');
+	const Comp = props => h(
+		'h1',
+		null,
+		h(
+			'span',
+			{ id: props.id },
+			props.greeting
+		)
+	);
+	mount(Comp, { id: 123, greeting: 'hello world' }, container);
+	t.equal(container.innerHTML, '<h1><span id="123">hello world</span></h1>');
+});
+test('mount composed component', t => {
+	const container = document.createElement('div');
+	const Comp = props => h(
+		'h1',
+		null,
+		h(
+			'span',
+			{ id: props.id },
+			props.greeting
+		)
+	);
+	const Container = props => h(
+		'section',
+		null,
+		h(Comp, { id: '567', greeting: 'hello you' })
+	);
+	mount(Container, {}, container);
+	t.equal(container.innerHTML, '<section><h1><span id="567">hello you</span></h1></section>');
+});
+test('mount a component with inner child', t => {
+	const container = document.createElement('div');
+	const Comp = props => h(
+		'h1',
+		null,
+		h(
+			'span',
+			{ id: props.id },
+			props.greeting
+		)
+	);
+	const Container = props => h(
+		'section',
+		null,
+		props.children
+	);
+	mount(() => h(
+		Container,
+		null,
+		h(Comp, { id: '567', greeting: 'hello world' })
+	), {}, container);
+	t.equal(container.innerHTML, '<section><h1><span id="567">hello world</span></h1></section>');
+});
+
+test('give ability to update a node (and its descendant)', t => {
+	const container = document.createElement('div');
+	const comp = ({ id, content }) => h(
+		'p',
+		{ id: id },
+		content
+	);
+	const initialVnode = mount(comp, { id: 123, content: 'hello world' }, container);
+	t.equal(container.innerHTML, '<p id="123">hello world</p>');
+	const updateFunc = update(comp, initialVnode);
+	updateFunc({ id: 567, content: 'bonjour monde' });
+	t.equal(container.innerHTML, '<p id="567">bonjour monde</p>');
+});
+
+test('should traverse a tree (going deep first)', t => {
+	const tree = {
+		id: 1,
+		children: [{ id: 2, children: [{ id: 3 }, { id: 4 }] }, { id: 5, children: [{ id: 6 }] }, { id: 7 }]
+	};
+
+	const sequence = [...traverse(tree)].map(n => n.id);
+	t.deepEqual(sequence, [1, 2, 3, 4, 5, 6, 7]);
+});
+test('pair key to value object of an object (aka Object.entries)', t => {
+	const holder = { a: 1, b: 2, c: 3, d: 4 };
+	const f = pairify(holder);
+	const data = Object.keys(holder).map(f);
+	t.deepEqual(data, [['a', 1], ['b', 2], ['c', 3], ['d', 4]]);
+});
+test('shallow equality test on object', t => {
+	const nested = { foo: 'bar' };
+	const obj1 = { a: 1, b: '2', c: true, d: nested };
+	t.ok(isShallowEqual(obj1, { a: 1, b: '2', c: true, d: nested }));
+	t.notOk(isShallowEqual(obj1, {
+		a: 1,
+		b: '2',
+		c: true,
+		d: { foo: 'bar' }
+	}), 'nested object should be checked by reference');
+	t.notOk(isShallowEqual(obj1, { a: 1, b: 2, c: true, d: nested }), 'exact type checking on primitive');
+	t.notOk(isShallowEqual(obj1, { a: 1, c: true, d: nested }), 'return false on missing properties');
+	t.notOk(isShallowEqual({ a: 1, c: true, d: nested }, obj1), 'return false on missing properties (commmutative');
+});
+
+test('bind an update function to a component', async t => {
+	let update$$1 = null;
+	const Comp = withState(({ foo }, setState) => {
+		if (!update$$1) {
+			update$$1 = setState;
+		}
+		return h(
+			'p',
+			null,
+			foo
+		);
+	});
+	const container = document.createElement('div');
+	mount(({ foo }) => h(Comp, { foo: foo }), { foo: 'bar' }, container);
+	t.equal(container.innerHTML, '<p>bar</p>');
+	await waitNextTick();
+	update$$1({ foo: 'bis' });
+	t.equal(container.innerHTML, '<p>bis</p>');
+});
+test('should create isolated state for each component', async t => {
+	let update1 = null;
+	let update2 = null;
+	const Comp = withState(({ foo }, setState) => {
+		if (!update1) {
+			update1 = setState;
+		} else if (!update2) {
+			update2 = setState;
+		}
+
+		return h(
+			'p',
+			null,
+			foo
+		);
+	});
+	const container = document.createElement('div');
+	mount(({ foo1, foo2 }) => h(
+		'div',
+		null,
+		h(Comp, { foo: foo1 }),
+		h(Comp, { foo: foo2 })
+	), { foo1: 'bar', foo2: 'bar2' }, container);
+	t.equal(container.innerHTML, '<div><p>bar</p><p>bar2</p></div>');
+	await waitNextTick();
+	update1({ foo: 'bis' });
+	t.equal(container.innerHTML, '<div><p>bis</p><p>bar2</p></div>');
+	update2({ foo: 'blah' });
+	t.equal(container.innerHTML, '<div><p>bis</p><p>blah</p></div>');
+});
 
 }());
 //# sourceMappingURL=bundle.js.map
