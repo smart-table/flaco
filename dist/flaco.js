@@ -65,36 +65,27 @@ function h(nodeType, props, ...children) {
 	const fullProps = Object.assign({children: normalizedChildren}, props);
 	const comp = nodeType(fullProps);
 	const compType = typeof comp;
-	/* eslint-disable no-negated-condition */
 	return compType !== 'function' ? comp : h(comp, props, ...normalizedChildren); // Functional comp vs combinator (HOC)
-	/* eslint-enable no-negated-condition */
 }
 
-function compose (first, ...fns) {
-  return (...args) => fns.reduce((previous, current) => current(previous), first(...args));
-}
+const compose = (first, ...fns) => (...args) => fns.reduce((previous, current) => current(previous), first(...args));
 
-function curry (fn, arityLeft) {
-  const arity = arityLeft || fn.length;
-  return (...args) => {
-    const argLength = args.length || 1;
-    if (arity === argLength) {
-      return fn(...args);
-    } else {
-      const func = (...moreArgs) => fn(...args, ...moreArgs);
-      return curry(func, arity - args.length);
-    }
-  };
-}
+const curry = (fn, arityLeft) => {
+	const arity = arityLeft || fn.length;
+	return (...args) => {
+		const argLength = args.length || 1;
+		if (arity === argLength) {
+			return fn(...args);
+		}
+		const func = (...moreArgs) => fn(...args, ...moreArgs);
+		return curry(func, arity - args.length);
+	};
+};
 
-
-
-function tap (fn) {
-  return arg => {
-    fn(arg);
-    return arg;
-  }
-}
+const tap = fn => arg => {
+	fn(arg);
+	return arg;
+};
 
 const nextTick = fn => setTimeout(fn, 0);
 
@@ -143,7 +134,6 @@ const identity = a => a;
 
 const noop = () => {};
 
-/* eslint-disable no-undef */
 const SVG_NP = 'http://www.w3.org/2000/svg';
 
 const updateDomNodeFactory = method => items => tap(domNode => {
@@ -191,7 +181,6 @@ const createDomNode = (vnode, parent) => {
 const getEventListeners = props => Object.keys(props)
 	.filter(k => k.substr(0, 2) === 'on')
 	.map(k => [k.substr(2).toLowerCase(), props[k]]);
-/* eslint-enable no-undef */
 
 function * traverse(vnode) {
 	yield vnode;
@@ -339,11 +328,7 @@ const hydrate = (vnode, dom) => {
 };
 
 const mount = curry((comp, initProp, root) => {
-	/* eslint-disable no-negated-condition */
-	/* eslint-disable no-void */
 	const vnode = comp.nodeType !== void 0 ? comp : comp(initProp || {});
-	/* eslint-enable no-void */
-	/* eslint-enable no-negated-condition */
 	const oldVNode = root.children.length ? hydrate(vnode, root.children[0]) : null;
 	const batch = render(oldVNode, vnode, root);
 	nextTick(() => {
@@ -487,6 +472,25 @@ var connect = (store, sliceState = identity) =>
 		return compose(subscribe, unsubscribe)(wrapperComp);
 	};
 
+const filterOutFunction = props => Object
+	.entries(props || {})
+	.filter(([key, value]) => typeof value !== 'function');
+
+const escapeHTML = s => String(s)
+	.replace(/&/g, '&amp;')
+	.replace(/</g, '&lt;')
+	.replace(/>/g, '&gt;');
+
+const render$1 = curry((comp, initProp) => {
+	const vnode = comp.nodeType !== void 0 ? comp : comp(initProp || {});
+	const {nodeType, children, props} = vnode;
+	const attributes = escapeHTML(filterOutFunction(props)
+		.map(([key, value]) => typeof value === 'boolean' ? (value === true ? key : '') : `${key}="${value}"`)
+		.join(' '));
+	const childrenHtml = children !== void 0 && children.length > 0 ? children.map(ch => render$1(ch)()).join('') : '';
+	return nodeType === 'Text' ? escapeHTML(String(props.value)) : `<${nodeType}${attributes ? ` ${attributes}` : ''}>${childrenHtml}</${nodeType}>`;
+});
+
 exports.h = h;
 exports.elm = elm;
 exports.withState = withState;
@@ -498,6 +502,7 @@ exports.onMount = onMount;
 exports.onUnMount = onUnMount;
 exports.connect = connect;
 exports.onUpdate = onUpdate;
+exports.renderAsString = render$1;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

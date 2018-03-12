@@ -2,13 +2,14 @@
   "name": "flaco",
   "version": "1.1.1",
   "description": "view engine library",
-  "main": "./dist/flaco.js",
+  "main": "./dist/flaco",
   "module": "./index.js",
   "jsnext:main": "./index.js",
   "scripts": {
-    "test:build": "rollup -c ./rollup/test.js",
-    "test": "xo ./lib/*.js ./index.js && rollup -c ./rollup/test.js && cat ./test/dist/bundle.js | tape-run",
-    "build": "rollup -c ./rollup/umd.js"
+    "build:test": "rollup -c ./rollup/test.js",
+    "test": "npm run build:test && cat ./test/dist/bundle.js | tape-run",
+    "build": "rollup -c ./rollup/umd.js",
+    "xo": "xo ./lib/*.js"
   },
   "repository": {
     "type": "git",
@@ -19,7 +20,9 @@
     "virtual-dom",
     "vdom",
     "jsx",
-    "hyperscript"
+    "hyperscript",
+    "ui",
+    "framework"
   ],
   "author": "Laurent Renard",
   "license": "MIT",

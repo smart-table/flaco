@@ -1,6 +1,6 @@
 .idea
+.circleci
 examples
 test
 node_modules
-rollup/rollup.legacy.js
-rollup/rollup.modern.js
+rollup

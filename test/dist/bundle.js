@@ -596,9 +596,7 @@ function h(nodeType, props, ...children) {
 	const fullProps = Object.assign({ children: normalizedChildren }, props);
 	const comp = nodeType(fullProps);
 	const compType = typeof comp;
-	/* eslint-disable no-negated-condition */
 	return compType !== 'function' ? comp : h(comp, props, ...normalizedChildren); // Functional comp vs combinator (HOC)
-	/* eslint-enable no-negated-condition */
 }
 
 const compose = (first, ...fns) => (...args) => fns.reduce((previous, current) => current(previous), first(...args));
@@ -667,7 +665,6 @@ const identity = a => a;
 
 const noop = () => {};
 
-/* eslint-disable no-undef */
 const SVG_NP = 'http://www.w3.org/2000/svg';
 
 const updateDomNodeFactory = method => items => tap$2(domNode => {
@@ -711,7 +708,6 @@ const createDomNode = (vnode, parent) => {
 };
 
 const getEventListeners = props => Object.keys(props).filter(k => k.substr(0, 2) === 'on').map(k => [k.substr(2).toLowerCase(), props[k]]);
-/* eslint-enable no-undef */
 
 function* traverse(vnode) {
 	yield vnode;
@@ -855,11 +851,7 @@ const hydrate = (vnode, dom) => {
 };
 
 const mount = curry((comp, initProp, root) => {
-	/* eslint-disable no-negated-condition */
-	/* eslint-disable no-void */
 	const vnode = comp.nodeType !== void 0 ? comp : comp(initProp || {});
-	/* eslint-enable no-void */
-	/* eslint-enable no-negated-condition */
 	const oldVNode = root.children.length ? hydrate(vnode, root.children[0]) : null;
 	const batch = render(oldVNode, vnode, root);
 	nextTick(() => {
@@ -977,6 +969,18 @@ var connect = ((store, sliceState = identity) => (comp, mapStateToProp = identit
 	});
 
 	return compose(subscribe, unsubscribe)(wrapperComp);
+});
+
+const filterOutFunction = props => Object.entries(props || {}).filter(([key, value]) => typeof value !== 'function');
+
+const escapeHTML = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+const render$1 = curry((comp, initProp) => {
+	const vnode = comp.nodeType !== void 0 ? comp : comp(initProp || {});
+	const { nodeType, children, props } = vnode;
+	const attributes = escapeHTML(filterOutFunction(props).map(([key, value]) => typeof value === 'boolean' ? value === true ? key : '' : `${key}="${value}"`).join(' '));
+	const childrenHtml = children !== void 0 && children.length > 0 ? children.map(ch => render$1(ch)()).join('') : '';
+	return nodeType === 'Text' ? escapeHTML(String(props.value)) : `<${nodeType}${attributes ? ` ${attributes}` : ''}>${childrenHtml}</${nodeType}>`;
 });
 
 /** Detect free variable `global` from Node.js. */
@@ -1974,6 +1978,99 @@ test('should create isolated state for each component', async t => {
 	t.equal(container.innerHTML, '<div><p>bis</p><p>bar2</p></div>');
 	update2({ foo: 'blah' });
 	t.equal(container.innerHTML, '<div><p>bis</p><p>blah</p></div>');
+});
+
+test('render a simple component', t => {
+	const Comp = props => h(
+		'h1',
+		null,
+		h(
+			'span',
+			{ id: props.id },
+			props.greeting
+		)
+	);
+	const output = render$1(Comp, { id: 123, greeting: 'hello world' });
+	t.equal(output, '<h1><span id="123">hello world</span></h1>');
+});
+
+test('render nested components', t => {
+	const Comp = props => h(
+		'h1',
+		null,
+		h(
+			'span',
+			{ id: props.id },
+			props.greeting
+		)
+	);
+	const Main = props => h(
+		'main',
+		null,
+		h(Comp, { id: 123, greeting: 'Hello world' }),
+		h(
+			'div',
+			null,
+			h(
+				'p',
+				null,
+				'Some other content'
+			)
+		)
+	);
+	const output = render$1(Main, {});
+	t.equal(output, `<main><h1><span id="123">Hello world</span></h1><div><p>Some other content</p></div></main>`);
+});
+
+test('should drop event listeners', t => {
+	const Comp = props => h(
+		'button',
+		{ onClick: () => {
+				console.log('foo');
+			} },
+		h(
+			'span',
+			{
+				id: props.id },
+			props.greeting
+		)
+	);
+	const output = render$1(Comp, { id: 123, greeting: 'hello world' });
+	t.equal(output, '<button><span id="123">hello world</span></button>');
+});
+
+test('should handle boolean attributes accordingly to html specification', t => {
+	const Comp = props => h(
+		'details',
+		{ open: props.open },
+		h(
+			'summary',
+			null,
+			'Some details'
+		),
+		h(
+			'p',
+			null,
+			'Some details content'
+		)
+	);
+	const openOutput = render$1(Comp, { open: true });
+	t.equal(openOutput, '<details open><summary>Some details</summary><p>Some details content</p></details>');
+	const closeOutput = render$1(Comp, { open: false });
+	t.equal(closeOutput, '<details><summary>Some details</summary><p>Some details content</p></details>');
+});
+
+test('should prevent html injection', t => {
+	const Comp = props => h(
+		'button',
+		{ id: props.id },
+		'Hello world'
+	);
+	const props = {
+		id: '"><script>console.log("owned")</script>'
+	};
+	const output = render$1(Comp, props);
+	t.equal(output, `<button id="\"&gt;&lt;script&gt;console.log(\"owned\")&lt;/script&gt;">Hello world</button>`);
 });
 
 }());
