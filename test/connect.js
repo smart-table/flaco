@@ -1,5 +1,7 @@
 import test from 'zora';
-import {h, connect, mount} from '../index';
+import h from '../lib/h';
+import connect from '../lib/connect';
+import {mount} from '../lib/dom-renderer';
 import {createStore} from 'redux';
 import {waitNextTick} from './test-util';
 

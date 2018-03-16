@@ -97,41 +97,6 @@ const isShallowEqual = (a, b) => {
 	return aKeys.length === bKeys.length && aKeys.every(k => a[k] === b[k]);
 };
 
-const ownKeys = obj => Object.getOwnPropertyNames(obj);
-
-const isDeepEqual = (a, b) => {
-	const type = typeof a;
-	const typeB = typeof b;
-
-	// Short path(s)
-	if (a === b) {
-		return true;
-	}
-
-	if (type !== typeB) {
-		return false;
-	}
-
-	if (type !== 'object') {
-		return a === b;
-	}
-
-	// Objects ...
-	if (a === null || b === null) {
-		return false;
-	}
-
-	if (Array.isArray(a)) {
-		return a.length && b.length && a.every((item, i) => isDeepEqual(a[i], b[i]));
-	}
-
-	const aKeys = ownKeys(a);
-	const bKeys = ownKeys(b);
-	return aKeys.length === bKeys.length && aKeys.every(k => isDeepEqual(a[k], b[k]));
-};
-
-const identity = a => a;
-
 const noop = () => {};
 
 const SVG_NP = 'http://www.w3.org/2000/svg';
@@ -147,7 +112,7 @@ const removeEventListeners = updateDomNodeFactory('removeEventListener');
 const addEventListeners = updateDomNodeFactory('addEventListener');
 
 const setAttributes = items => tap(domNode => {
-	const attributes = items.filter(pair => typeof pair.value !== 'function');
+	const attributes = items.filter(([key,value]) => typeof value !== 'function');
 	for (const [key, value] of attributes) {
 		if (value === false) {
 			domNode.removeAttribute(key);
@@ -409,68 +374,119 @@ var withState = comp => () => {
 	return compose(onMount(setUpdateFunction), onUpdate(setUpdateFunction))(wrapperComp);
 };
 
-/**
- * Combinator to create a Elm like app
- * @param view {Function} - a component which takes as arguments the current model and the list of updates
- * @returns {Function} - a Elm like application whose properties "model", "updates" and "subscriptions" will define the related domain specific objects
- */
-var elm = view => ({model, updates, subscriptions = []} = {}) => {
-	let updateFunc;
-	const actionStore = {};
-	for (const update$$1 of Object.keys(updates)) {
-		actionStore[update$$1] = () => updateFunc(model, actionStore);
-	}
-
-	const comp = () => view(model, actionStore);
-
-	const initActionStore = vnode => {
-		updateFunc = update(comp, vnode);
-	};
-	const initSubscription = subscriptions.map(sub => vnode => sub(vnode, actionStore));
-	const initFunc = compose(initActionStore, ...initSubscription);
-
-	return onMount(initFunc, comp);
-};
-
-const defaultUpdate = (a, b) => isDeepEqual(a, b) === false;
-
-/**
- * Connect combinator: will create "container" component which will subscribe to a Redux like store. and update its children whenever a specific slice of state change under specific circumstances
- * @param store {Object} - The store (implementing the same api than Redux store
- * @param sliceState {Function} [state => state] - A function which takes as argument the state and return a "transformed" state (like partial, etc) relevant to the container
- * @returns {Function} - A container factory with the following arguments:
- *  - mapStateToProp: a function which takes as argument what the "sliceState" function returns and returns an object to be blended into the properties of the component (default to identity function)
- *  - shouldUpdate: a function which takes as arguments the previous and the current versions of what "sliceState" function returns to returns a boolean defining whether the component should be updated (default to a deepEqual check)
- */
-var connect = (store, sliceState = identity) =>
-	(comp, mapStateToProp = identity, shouldUpate = defaultUpdate) => initProp => {
-		const componentProps = initProp;
-		let updateFunc;
-		let previousStateSlice;
-		let unsubscriber;
-
-		const wrapperComp = (props, ...args) => {
-			return comp(Object.assign(props, mapStateToProp(sliceState(store.getState()))), ...args);
-		};
-
-		const subscribe = onMount(vnode => {
-			updateFunc = update(wrapperComp, vnode);
-			unsubscriber = store.subscribe(() => {
-				const stateSlice = sliceState(store.getState());
-				if (shouldUpate(previousStateSlice, stateSlice) === true) {
-					Object.assign(componentProps, mapStateToProp(stateSlice));
-					updateFunc(componentProps);
-					previousStateSlice = stateSlice;
-				}
-			});
-		});
-
-		const unsubscribe = onUnMount(() => {
-			unsubscriber();
-		});
-
-		return compose(subscribe, unsubscribe)(wrapperComp);
-	};
+// Main root
+// todo
+// Document metadata
+// todo
+// Sectioning root
+const body = (...args) => h('body', ...args);
+// Content sectioning
+const address = (...args) => h('address', ...args);
+const article = (...args) => h('article', ...args);
+const aside = (...args) => h('aside', ...args);
+const footer = (...args) => h('footer', ...args);
+const header = (...args) => h('header', ...args);
+const h1 = (...args) => h('h1', ...args);
+const h2 = (...args) => h('h2', ...args);
+const h3 = (...args) => h('h3', ...args);
+const h4 = (...args) => h('h4', ...args);
+const h5 = (...args) => h('h5', ...args);
+const h6 = (...args) => h('h6', ...args);
+const hgroup = (...args) => h('hgroup', ...args);
+const nav = (...args) => h('nav', ...args);
+const section = (...args) => h('section', ...args);
+// Text content
+const blockquote = (...args) => h('blockquote', ...args);
+const dd = (...args) => h('dd', ...args);
+const dir = (...args) => h('dir', ...args);
+const div = (...args) => h('div', ...args);
+const dl = (...args) => h('dl', ...args);
+const dt = (...args) => h('dt', ...args);
+const figcaption = (...args) => h('figcaption', ...args);
+const figure = (...args) => h('figure', ...args);
+const hr = (...args) => h('hr', ...args);
+const li = (...args) => h('li', ...args);
+const main = (...args) => h('main', ...args);
+const ol = (...args) => h('ol', ...args);
+const p = (...args) => h('p', ...args);
+const pre = (...args) => h('pre', ...args);
+const ul = (...args) => h('ul', ...args);
+// Inline text semantic
+const a = (...args) => h('a', ...args);
+const abbr = (...args) => h('abbr', ...args);
+const b = (...args) => h('b', ...args);
+const bdi = (...args) => h('bdi', ...args);
+const bdo = (...args) => h('bdo', ...args);
+const br = (...args) => h('br', ...args);
+const cite = (...args) => h('cite', ...args);
+const quote = (...args) => h('quote', ...args);
+const data = (...args) => h('data', ...args);
+const dfn = (...args) => h('dfn', ...args);
+const em = (...args) => h('em', ...args);
+const i = (...args) => h('i', ...args);
+const kbd = (...args) => h('kbd', ...args);
+const mark = (...args) => h('mark', ...args);
+const q = (...args) => h('q', ...args);
+const rp = (...args) => h('rp', ...args);
+const rt = (...args) => h('rt', ...args);
+const rtc = (...args) => h('rtc', ...args);
+const ruby = (...args) => h('ruby', ...args);
+const s = (...args) => h('s', ...args);
+const samp = (...args) => h('samp', ...args);
+const small = (...args) => h('small', ...args);
+const span = (...args) => h('span', ...args);
+const strong = (...args) => h('strong', ...args);
+const sub = (...args) => h('sub', ...args);
+const sup = (...args) => h('sup', ...args);
+const time = (...args) => h('time', ...args);
+const u = (...args) => h('u', ...args);
+// export const var = (...args) => h('var', ...args);
+const wbr = (...args) => h('wbr', ...args);
+// Image and multimedia
+const area = (...args) => h('area', ...args);
+const audio = (...args) => h('audio', ...args);
+const img = (...args) => h('img', ...args);
+const map = (...args) => h('map', ...args);
+const track = (...args) => h('track', ...args);
+const video = (...args) => h('video', ...args);
+// Embedded content
+const embed = (...args) => h('embed', ...args);
+const object = (...args) => h('object', ...args);
+const param = (...args) => h('param', ...args);
+const picture = (...args) => h('picture', ...args);
+const source = (...args) => h('source', ...args);
+// Scripting
+// todo
+// Demarcating edit
+// todo
+// Table content
+const caption = (...args) => h('caption', ...args);
+const col = (...args) => h('col', ...args);
+const colgroup = (...args) => h('colgroup', ...args);
+const table = (...args) => h('table', ...args);
+const tbody = (...args) => h('tbody', ...args);
+const td = (...args) => h('td', ...args);
+const tfoot = (...args) => h('tfoot', ...args);
+const th = (...args) => h('th', ...args);
+const thead = (...args) => h('thead', ...args);
+const tr = (...args) => h('tr', ...args);
+// Forms
+const button = (...args) => h('button', ...args);
+const datalist = (...args) => h('datalist', ...args);
+const fieldset = (...args) => h('fieldset', ...args);
+const form = (...args) => h('form', ...args);
+const input = (...args) => h('input', ...args);
+const label = (...args) => h('label', ...args);
+const legend = (...args) => h('legend', ...args);
+const meter = (...args) => h('meter', ...args);
+const optgroup = (...args) => h('optgroup', ...args);
+const option = (...args) => h('option', ...args);
+const output = (...args) => h('output', ...args);
+const progress = (...args) => h('progress', ...args);
+const select = (...args) => h('select', ...args);
+const textarea = (...args) => h('textarea', ...args);
+// Interactive elements
+// todo
 
 const filterOutFunction = props => Object
 	.entries(props || {})
@@ -492,17 +508,108 @@ const render$1 = curry((comp, initProp) => {
 });
 
 exports.h = h;
-exports.elm = elm;
 exports.withState = withState;
 exports.render = render;
 exports.mount = mount;
 exports.update = update;
-exports.isDeepEqual = isDeepEqual;
+exports.renderAsString = render$1;
+exports.body = body;
+exports.address = address;
+exports.article = article;
+exports.aside = aside;
+exports.footer = footer;
+exports.header = header;
+exports.h1 = h1;
+exports.h2 = h2;
+exports.h3 = h3;
+exports.h4 = h4;
+exports.h5 = h5;
+exports.h6 = h6;
+exports.hgroup = hgroup;
+exports.nav = nav;
+exports.section = section;
+exports.blockquote = blockquote;
+exports.dd = dd;
+exports.dir = dir;
+exports.div = div;
+exports.dl = dl;
+exports.dt = dt;
+exports.figcaption = figcaption;
+exports.figure = figure;
+exports.hr = hr;
+exports.li = li;
+exports.main = main;
+exports.ol = ol;
+exports.p = p;
+exports.pre = pre;
+exports.ul = ul;
+exports.a = a;
+exports.abbr = abbr;
+exports.b = b;
+exports.bdi = bdi;
+exports.bdo = bdo;
+exports.br = br;
+exports.cite = cite;
+exports.quote = quote;
+exports.data = data;
+exports.dfn = dfn;
+exports.em = em;
+exports.i = i;
+exports.kbd = kbd;
+exports.mark = mark;
+exports.q = q;
+exports.rp = rp;
+exports.rt = rt;
+exports.rtc = rtc;
+exports.ruby = ruby;
+exports.s = s;
+exports.samp = samp;
+exports.small = small;
+exports.span = span;
+exports.strong = strong;
+exports.sub = sub;
+exports.sup = sup;
+exports.time = time;
+exports.u = u;
+exports.wbr = wbr;
+exports.area = area;
+exports.audio = audio;
+exports.img = img;
+exports.map = map;
+exports.track = track;
+exports.video = video;
+exports.embed = embed;
+exports.object = object;
+exports.param = param;
+exports.picture = picture;
+exports.source = source;
+exports.caption = caption;
+exports.col = col;
+exports.colgroup = colgroup;
+exports.table = table;
+exports.tbody = tbody;
+exports.td = td;
+exports.tfoot = tfoot;
+exports.th = th;
+exports.thead = thead;
+exports.tr = tr;
+exports.button = button;
+exports.datalist = datalist;
+exports.fieldset = fieldset;
+exports.form = form;
+exports.input = input;
+exports.label = label;
+exports.legend = legend;
+exports.meter = meter;
+exports.optgroup = optgroup;
+exports.option = option;
+exports.output = output;
+exports.progress = progress;
+exports.select = select;
+exports.textarea = textarea;
 exports.onMount = onMount;
 exports.onUnMount = onUnMount;
-exports.connect = connect;
 exports.onUpdate = onUpdate;
-exports.renderAsString = render$1;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

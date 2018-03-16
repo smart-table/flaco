@@ -678,7 +678,7 @@ const removeEventListeners = updateDomNodeFactory('removeEventListener');
 const addEventListeners = updateDomNodeFactory('addEventListener');
 
 const setAttributes = items => tap$2(domNode => {
-	const attributes = items.filter(pair => typeof pair.value !== 'function');
+	const attributes = items.filter(([key, value]) => typeof value !== 'function');
 	for (const [key, value] of attributes) {
 		if (value === false) {
 			domNode.removeAttribute(key);
@@ -913,25 +913,6 @@ const onUnMount = lifeCycleFactory('onUnMount');
  */
 const onUpdate = lifeCycleFactory('onUpdate');
 
-/**
- * Combinator to create a "stateful component": ie it will have its own state and the ability to update its own tree
- * @param comp {Function} - the component
- * @returns {Function} - a new wrapped component
- */
-var withState = (comp => () => {
-	let updateFunc;
-	const wrapperComp = (props, ...args) => {
-		// Lazy evaluate updateFunc (to make sure it is defined
-		const setState = newState => updateFunc(newState);
-		return comp(props, setState, ...args);
-	};
-	const setUpdateFunction = vnode => {
-		updateFunc = update(wrapperComp, vnode);
-	};
-
-	return compose(onMount(setUpdateFunction), onUpdate(setUpdateFunction))(wrapperComp);
-});
-
 const defaultUpdate = (a, b) => isDeepEqual(a, b) === false;
 
 /**
@@ -969,18 +950,6 @@ var connect = ((store, sliceState = identity) => (comp, mapStateToProp = identit
 	});
 
 	return compose(subscribe, unsubscribe)(wrapperComp);
-});
-
-const filterOutFunction = props => Object.entries(props || {}).filter(([key, value]) => typeof value !== 'function');
-
-const escapeHTML = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-const render$1 = curry((comp, initProp) => {
-	const vnode = comp.nodeType !== void 0 ? comp : comp(initProp || {});
-	const { nodeType, children, props } = vnode;
-	const attributes = escapeHTML(filterOutFunction(props).map(([key, value]) => typeof value === 'boolean' ? value === true ? key : '' : `${key}="${value}"`).join(' '));
-	const childrenHtml = children !== void 0 && children.length > 0 ? children.map(ch => render$1(ch)()).join('') : '';
-	return nodeType === 'Text' ? escapeHTML(String(props.value)) : `<${nodeType}${attributes ? ` ${attributes}` : ''}>${childrenHtml}</${nodeType}>`;
 });
 
 /** Detect free variable `global` from Node.js. */
@@ -1691,6 +1660,40 @@ test('get event Listeners from props object', t => {
 	t.deepEqual(events, [['click', props.onClick], ['mousedown', props.onMousedown]]);
 });
 
+/**
+ * Combinator to create a "stateful component": ie it will have its own state and the ability to update its own tree
+ * @param comp {Function} - the component
+ * @returns {Function} - a new wrapped component
+ */
+var withState = (comp => () => {
+	let updateFunc;
+	const wrapperComp = (props, ...args) => {
+		// Lazy evaluate updateFunc (to make sure it is defined
+		const setState = newState => updateFunc(newState);
+		return comp(props, setState, ...args);
+	};
+	const setUpdateFunction = vnode => {
+		updateFunc = update(wrapperComp, vnode);
+	};
+
+	return compose(onMount(setUpdateFunction), onUpdate(setUpdateFunction))(wrapperComp);
+});
+
+// Interactive elements
+// todo
+
+const filterOutFunction = props => Object.entries(props || {}).filter(([key, value]) => typeof value !== 'function');
+
+const escapeHTML = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+const render$1 = curry((comp, initProp) => {
+	const vnode = comp.nodeType !== void 0 ? comp : comp(initProp || {});
+	const { nodeType, children, props } = vnode;
+	const attributes = escapeHTML(filterOutFunction(props).map(([key, value]) => typeof value === 'boolean' ? value === true ? key : '' : `${key}="${value}"`).join(' '));
+	const childrenHtml = children !== void 0 && children.length > 0 ? children.map(ch => render$1(ch)()).join('') : '';
+	return nodeType === 'Text' ? escapeHTML(String(props.value)) : `<${nodeType}${attributes ? ` ${attributes}` : ''}>${childrenHtml}</${nodeType}>`;
+});
+
 test('create regular html node', t => {
 	const vnode = h('div', { id: 'someId', 'class': 'special' });
 	t.deepEqual(vnode, { lifeCycle: 0, nodeType: 'div', props: { id: 'someId', 'class': 'special' }, children: [] });
@@ -1990,8 +1993,8 @@ test('render a simple component', t => {
 			props.greeting
 		)
 	);
-	const output = render$1(Comp, { id: 123, greeting: 'hello world' });
-	t.equal(output, '<h1><span id="123">hello world</span></h1>');
+	const output$$1 = render$1(Comp, { id: 123, greeting: 'hello world' });
+	t.equal(output$$1, '<h1><span id="123">hello world</span></h1>');
 });
 
 test('render nested components', t => {
@@ -2018,8 +2021,8 @@ test('render nested components', t => {
 			)
 		)
 	);
-	const output = render$1(Main, {});
-	t.equal(output, `<main><h1><span id="123">Hello world</span></h1><div><p>Some other content</p></div></main>`);
+	const output$$1 = render$1(Main, {});
+	t.equal(output$$1, `<main><h1><span id="123">Hello world</span></h1><div><p>Some other content</p></div></main>`);
 });
 
 test('should drop event listeners', t => {
@@ -2035,8 +2038,8 @@ test('should drop event listeners', t => {
 			props.greeting
 		)
 	);
-	const output = render$1(Comp, { id: 123, greeting: 'hello world' });
-	t.equal(output, '<button><span id="123">hello world</span></button>');
+	const output$$1 = render$1(Comp, { id: 123, greeting: 'hello world' });
+	t.equal(output$$1, '<button><span id="123">hello world</span></button>');
 });
 
 test('should handle boolean attributes accordingly to html specification', t => {
@@ -2069,8 +2072,8 @@ test('should prevent html injection', t => {
 	const props = {
 		id: '"><script>console.log("owned")</script>'
 	};
-	const output = render$1(Comp, props);
-	t.equal(output, `<button id="\"&gt;&lt;script&gt;console.log(\"owned\")&lt;/script&gt;">Hello world</button>`);
+	const output$$1 = render$1(Comp, props);
+	t.equal(output$$1, `<button id="\"&gt;&lt;script&gt;console.log(\"owned\")&lt;/script&gt;">Hello world</button>`);
 });
 
 }());

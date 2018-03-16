@@ -1,24 +1,7 @@
-import h from './lib/h';
-import withState from './lib/with-state';
-import elm from './lib/elm';
-import {mount, render} from './lib/dom-renderer';
-import update from './lib/update';
-import {onMount, onUnMount, onUpdate} from './lib/lifecycles';
-import connect from './lib/connect';
-import {isDeepEqual} from './lib/util';
-import renderAsString from './lib/string-renderer';
-
-export {
-	h,
-	elm,
-	withState,
-	render,
-	mount,
-	update,
-	isDeepEqual,
-	onMount,
-	onUnMount,
-	connect,
-	onUpdate,
-	renderAsString
-};
+export {default as h} from './lib/h';
+export {default as withState} from './lib/with-state';
+export {render, mount} from './lib/dom-renderer';
+export * from './lib/hdom';
+export {default as update} from './lib/update'
+export {default as renderAsString} from './lib/string-renderer';
+export * from './lib/lifecycles';
