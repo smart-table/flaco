@@ -1,4 +1,3 @@
-import connect from './connect';
 import domUtil from './dom-util';
 import h from './h';
 import lifecycles from './lifecycles';
