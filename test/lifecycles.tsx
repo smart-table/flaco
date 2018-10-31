@@ -1,10 +1,11 @@
 import test from 'zora';
-import { onMount, onUnMount, h, mount, render } from '../dist/src';
-import { waitNextTick } from './test-util';
-test('should run a function when component is mounted', async (t) => {
+import {onMount, onUnMount, h, mount, render} from '../dist/src';
+import {waitNextTick} from './test-util';
+
+test('should run a function when component is mounted', async t => {
     let counter = 0;
     const container = document.createElement('div');
-    const comp = () => h("p", null, "hello world");
+    const comp = () => <p>hello world</p>;
     const withMount = onMount(() => {
         counter++;
     }, comp);
@@ -13,10 +14,10 @@ test('should run a function when component is mounted', async (t) => {
     await waitNextTick();
     t.equal(counter, 1);
 });
-test('should compose the mount function when there are many', async (t) => {
+test('should compose the mount function when there are many', async t => {
     let counter = 0;
     const container = document.createElement('div');
-    const comp = () => h("p", null, "hello world");
+    const comp = () => <p>hello world</p>;
     const withMount = onMount(() => {
         counter++;
     }, comp);
@@ -28,16 +29,22 @@ test('should compose the mount function when there are many', async (t) => {
     await waitNextTick();
     t.equal(counter, 10);
 });
+
 test('should run a function when component is unMounted', t => {
     let unmounted = null;
     const container = document.createElement('div');
     const Item = onUnMount((n) => {
         unmounted = n;
-    }, ({ id }) => h("li", { id: id }, "hello world"));
-    const containerComp = (({ items }) => (h("ul", null, items.map(item => h(Item, Object.assign({}, item))))));
-    const vnode = mount(containerComp, { items: [{ id: 1 }, { id: 2 }, { id: 3 }] }, container);
+    }, ({id}) => <li id={id}>hello world</li>);
+    const containerComp = (({items}) => (<ul>
+        {
+            items.map(item => <Item {...item}/>)
+        }
+    </ul>));
+
+    const vnode = mount(containerComp, {items: [{id: 1}, {id: 2}, {id: 3}]}, container);
     t.equal(container.innerHTML, '<ul><li id="1">hello world</li><li id="2">hello world</li><li id="3">hello world</li></ul>');
-    const batch = render(vnode, containerComp({ items: [{ id: 1 }, { id: 3 }] }), container);
+    const batch = render(vnode, containerComp({items: [{id: 1}, {id: 3}]}), container);
     t.equal(container.innerHTML, '<ul><li id="1">hello world</li><li id="3">hello world</li></ul>');
     for (let f of batch) {
         f();

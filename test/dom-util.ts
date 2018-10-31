@@ -1,25 +1,39 @@
-import { setAttributes, removeAttributes, addEventListeners, removeEventListeners, setTextNode, getEventListeners } from '../dist/src/dom-util';
-import { noop } from '../dist/src/util';
+import {
+    setAttributes,
+    removeAttributes,
+    addEventListeners,
+    removeEventListeners,
+    setTextNode,
+    getEventListeners
+} from '../dist/src/dom-util';
+import {noop} from '../dist/src/util';
 import test from 'zora';
+
 const domProto = {
+
     removeAttribute(attr) {
         delete this[attr];
     },
+
     setAttribute(attr, val) {
         this[attr] = val;
     },
+
     addEventListener(event, handler) {
         this.handlers[event] = handler;
     },
+
     removeEventListener(event, handler) {
         delete this.handlers[event];
     }
 };
+
 const fakeDom = () => {
     const dom = Object.create(domProto);
-    Object.defineProperty(dom, 'handlers', { value: {} });
+    Object.defineProperty(dom, 'handlers', {value: {}});
     return dom;
 };
+
 const ownProps = (obj) => {
     const ownProperties = [];
     for (let prop in obj) {
@@ -29,6 +43,7 @@ const ownProps = (obj) => {
     }
     return ownProperties;
 };
+
 test('set attributes', t => {
     const d = fakeDom();
     const update = setAttributes([['foo', 'bar'], ['blah', 2], ['woot', true]]);
@@ -71,7 +86,7 @@ test('remove attributes', t => {
 test('add event listeners', t => {
     const d = fakeDom();
     const update = addEventListeners([['click', noop
-        ], ['input', noop]]);
+    ], ['input', noop]]);
     const n = update(d);
     t.equal(n, d, 'should have forwarded the node');
     t.equal(ownProps(d).length, 0);
@@ -84,14 +99,14 @@ test('remove event listeners', t => {
     d.handlers.click = noop;
     d.handlers.input = noop;
     const update = removeEventListeners([['click', noop
-        ]]);
+    ]]);
     const n = update(d);
     t.equal(n, d, 'should have forwarded the node');
     t.deepEqual(ownProps(d.handlers), ['input']);
     t.equal(d.handlers.input, noop);
 });
 test('set text node value', function* (t) {
-    const node = {};
+    const node: Node = <Node>{};
     const update = setTextNode('foo');
     update(node);
     t.equal(node.textContent, 'foo');
@@ -105,6 +120,7 @@ test('get event Listeners from props object', t => {
         onMousedown: () => {
         }
     };
+
     const events = getEventListeners(props);
     t.deepEqual(events, [
         ['click', props.onClick],
