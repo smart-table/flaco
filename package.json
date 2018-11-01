@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test:ci": "npm run build && npm test",
-    "test": "npm run build:test && rollup -c ./rollup/test.js | tape-run",
+    "test": "npm run build:test && rollup -c ./rollup/test.js && cat ./test/dist/debug.js | tape-run",
     "build:clean": "rm -rf ./dist && mkdir -p ./dist/bundle && cp -r ./src ./dist/src",
     "build:test": "tsc -b test",
     "build:compile": "tsc",
