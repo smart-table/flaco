@@ -1,6 +1,6 @@
 {
   "name": "flaco",
-  "version": "2.0.0-1",
+  "version": "2.0.0-2",
   "description": "view engine library",
   "main": "./dist/bundle/index",
   "types": "./dist/declarations/index.d.ts",
@@ -16,7 +16,7 @@
     "build:compile": "tsc",
     "build:bundle": "rollup -c ./rollup/build.js && rollup -c ./rollup/cdn.js",
     "build": "npm run build:clean && npm run build:compile && npm run build:bundle",
-    "build:example": "tsc -b examples && rollup -c ./examples/statefull-counters/rollup.js"
+    "build:example": "rm -rf ./examples/dist/*.js ./examples/dist/*.js.map && tsc -b examples && rollup -c ./examples/rollup.js"
   },
   "repository": {
     "type": "git",
@@ -45,6 +45,7 @@
     "rollup": "^0.66.6",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-node-resolve": "^3.4.0",
+    "smart-table-core": "^3.0.2",
     "tape-run": "^4.0.0",
     "typescript": "^3.1.4",
     "zora": "^2.0.1"

@@ -11,8 +11,8 @@ const escapeHTML = s => String(s)
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
-export const renderAsString = curry((comp: VNode | ComponentFunction, initProp: object = {}) => {
-    const vnode = isVNode(comp) ? comp : comp(initProp);
+export const renderAsString = curry((comp: VNode | ComponentFunction, initProp: object) => {
+    const vnode = isVNode(comp) ? comp : comp(initProp || {});
     const {nodeType, children, props} = vnode;
     const attributes = escapeHTML(filterOutFunction(props)
         .map(([key, value]) => typeof value === 'boolean' ? (value === true ? key : '') : `${key}="${value}"`)
