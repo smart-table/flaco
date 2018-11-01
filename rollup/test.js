@@ -6,7 +6,8 @@ export default {
     output: {
         file: './test/dist/debug.js',
         format: 'iife',
-        name: 'test'
+        name: 'test',
+        sourcemap:true
     },
-    plugins: [node(), cjs()]
+    plugins: [node({module:true}), cjs()]
 };
