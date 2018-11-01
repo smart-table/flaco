@@ -4,10 +4,8 @@ import cjs from 'rollup-plugin-commonjs';
 export default {
     input: './test/index.js',
     output: {
-        file: './test/dist/debug.js',
         format: 'iife',
-        name: 'test',
-        sourcemap:true
+        name: 'test'
     },
     plugins: [node({module:true}), cjs()]
 };

@@ -9,13 +9,13 @@
     "test": "test"
   },
   "scripts": {
-    "test:ci": "npm run build && npm test",
-    "test": "tsc -b test && rollup -c ./rollup/test.js --silent",
+    "test:ci": "npm run build && tsc -b test && rollup -c ./rollup/test.js | tape-run",
+    "test": "tsc -b test && rollup -c ./rollup/test.js | tee ./test/dist/debug.js | tape-run",
     "build:clean": "rm -rf ./dist && mkdir -p ./dist/bundle && cp -r ./src ./dist/src",
     "build:compile": "tsc",
     "build:bundle": "rollup -c ./rollup/build.js && rollup -c ./rollup/cdn.js",
-    "build": "npm run build:clean && npm run build:compile && npm run build:bundle",
-    "build:example": "rm -rf ./examples/dist/*.js ./examples/dist/*.js.map && tsc -b examples && rollup -c ./examples/rollup.js"
+    "build:example": "rm -rf ./examples/dist/*.js ./examples/dist/*.js.map && tsc -b examples && rollup -c ./examples/rollup.js",
+    "build": "npm run build:clean && npm run build:compile && npm run build:bundle"
   },
   "repository": {
     "type": "git",
