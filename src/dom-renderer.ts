@@ -60,17 +60,20 @@ interface PatchResult {
 
 // Apply vnode diffing to actual dom node (if new node => it will be mounted into the parent)
 const domify = (oldVnode: VNode | null, newVnode: VNode | null, parentDomNode: Element): PatchResult => {
-    if (oldVnode === null && newVnode) { // There is no previous vnode
+    // There is no previous vnode -> We create a new node
+    if (oldVnode === null && newVnode) {
         newVnode.dom = parentDomNode.appendChild(domFactory(newVnode, parentDomNode));
         newVnode.lifeCycle = 1;
         return {vnode: newVnode, garbage: null};
     }
 
     // There is a previous vnode
-    if (newVnode === null) { // We must remove the related dom node
+    // Case 1: Remove the related dom node
+    if (newVnode === null) {
         parentDomNode.removeChild(oldVnode.dom);
         return ({garbage: oldVnode, vnode: null});
-    } else if (newVnode.nodeType !== oldVnode.nodeType) { // It must be replaced (todo check with keys)
+        // Case 2: replace the old
+    } else if (newVnode.nodeType !== oldVnode.nodeType) {
         newVnode.dom = domFactory(newVnode, parentDomNode);
         newVnode.lifeCycle = 1;
         parentDomNode.replaceChild(newVnode.dom, oldVnode.dom);

@@ -1,6 +1,6 @@
 {
   "name": "flaco",
-  "version": "2.0.0-2",
+  "version": "2.0.0-3",
   "description": "view engine library",
   "main": "./dist/bundle/index",
   "types": "./dist/declarations/index.d.ts",

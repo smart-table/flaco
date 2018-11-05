@@ -2,9 +2,9 @@ import {h, VNode, VNodeLike} from './h';
 import {isVNodeLike, NA} from './util';
 
 interface HTMLElementComponentFunction {
-    (tag: string, ...children: VNodeLike[]): VNode;
+    (...children: VNodeLike[]): VNode;
 
-    (tag: string, props: object, ...children: VNodeLike[]): VNode;
+    (props: object, ...children: VNodeLike[]): VNode;
 }
 
 const HTMLElementComponentFactory = (tag: string): HTMLElementComponentFunction => (props, ...children) => {

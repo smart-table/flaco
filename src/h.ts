@@ -81,5 +81,6 @@ export function h(nodeType: NodeType, props: object | null, ...children: VNodeLi
     const fullProps = {children: normalizedChildren, ...actualProps};
     const comp = nodeType(fullProps);
     const compType = typeof comp;
+    // Higher order function vs component function
     return compType !== 'function' ? comp : h(comp, actualProps, ...normalizedChildren); // Functional comp vs combinator (HOC)
 }

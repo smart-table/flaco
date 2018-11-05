@@ -43,14 +43,16 @@ export const setTextNode = (val: any) => (node: Node) => {
 };
 
 export const createDomNode = (vnode: VNode, parent: Element): Element | Node => {
-    if (vnode.nodeType === 'svg') {
-        return document.createElementNS(SVG_NP, vnode.nodeType);
-    } else if (vnode.nodeType === 'Text') {
-        return document.createTextNode(vnode.nodeType);
+    switch (vnode.nodeType) {
+        case 'svg':
+            return document.createElementNS(SVG_NP, vnode.nodeType);
+        case 'Text':
+            return document.createTextNode(vnode.nodeType);
+        default:
+            return parent.namespaceURI === SVG_NP ?
+                document.createElementNS(SVG_NP, vnode.nodeType) :
+                document.createElement(vnode.nodeType);
     }
-    return parent.namespaceURI === SVG_NP ?
-        document.createElementNS(SVG_NP, vnode.nodeType) :
-        document.createElement(vnode.nodeType);
 };
 
 // @ts-ignore
