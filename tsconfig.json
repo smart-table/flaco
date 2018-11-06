@@ -10,7 +10,7 @@
     "preserveConstEnums": true,
     "declaration": true,
     "declarationDir": "./dist/declarations",
-    "target": "es2017"
+    "target": "es2018"
   },
   "include": [
     "./dist/src/*"
